@@ -1,7 +1,17 @@
-+----------------------+
-|    SceneFactory      |
-+----------------------+
-| + create(type, stage, db): Scene |
+<<abstract>> SceneFactory
+-----------------------------------------
+- SCENE_WIDTH : int = 400
+- SCENE_HEIGHT : int = 300
+- F_TO_C_LABEL : String
+- C_TO_F_LABEL : String
+- S1_PROMPT : String
+- S2_PROMPT : String
+- CONVERT : String
+- ERROR_MSG : String
+- holdTimer : PauseTransition
+-----------------------------------------
++ create(type: SceneType, stage: Stage) : Scene
+-----------------------------------------
 | - buildMainScene(...)            |
 | - buildLoginScene(...)           |
 | - buildDashboardScene(...)       |

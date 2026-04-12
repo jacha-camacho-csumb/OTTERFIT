@@ -1,0 +1,26 @@
+src/main/java/com/yourapp/
+│
+├── Main.java
+│
+├── factory/
+│   ├── SceneFactory.java
+│   └── SceneType.java
+│
+├── ui/
+│   ├── main/
+│   │   └── MainView.java
+│   ├── login/
+│   │   └── LoginView.java
+│   └── dashboard/
+│       └── DashboardView.java
+│
+├── db/
+│   ├── DatabaseManager.java
+│   └── dao/
+│       └── ItemDAO.java
+│
+├── model/
+│   └── Item.java
+│
+└── util/
+    └── (optional helpers later)

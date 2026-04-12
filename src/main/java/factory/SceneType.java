@@ -1,3 +1,5 @@
+package factory;
+
 /**
  * SceneType
  * <p>
@@ -7,6 +9,6 @@
  * @since 3/28/2026
  */
 public enum SceneType {
-    F_TO_C,
-    C_TO_F
+    MAIN,
+    LOGIN
 }

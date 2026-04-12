@@ -1,0 +1,8 @@
++----------------------+
+|    SceneFactory      |
++----------------------+
+| + create(type, stage, db): Scene |
+| - buildMainScene(...)            |
+| - buildLoginScene(...)           |
+| - buildDashboardScene(...)       |
++----------+-----------------------+

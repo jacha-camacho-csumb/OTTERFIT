@@ -204,7 +204,6 @@ Created using Draw.io
 ![Alt text](https://i.imgur.com/SUH9SED.png)
 ![Alt text](https://i.imgur.com/PhAcUom.png)
 
-(Add screenshots here if available)
 
 ---
 

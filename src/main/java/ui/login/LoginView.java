@@ -1,4 +1,6 @@
 package ui.login;
+
+import db.Database;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -17,7 +19,7 @@ import javafx.stage.Stage;
 
 public class LoginView {
 
-    public static Scene createScene(Stage stage) {
+    public static Scene createScene(Stage stage, Database db) {
         // Not used right now, but keeps API consistent
         VBox layout = new VBox(new Label("Login Scene"));
         return new Scene(layout, 200, 150);

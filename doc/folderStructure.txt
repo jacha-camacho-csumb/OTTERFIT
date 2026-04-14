@@ -2,6 +2,9 @@ src/main/java/com/yourapp/
 │
 ├── Main.java
 │
+├── config/
+│   └── AppConfig.java
+│
 ├── factory/
 │   ├── SceneFactory.java
 │   └── SceneType.java
@@ -15,12 +18,7 @@ src/main/java/com/yourapp/
 │       └── DashboardView.java
 │
 ├── db/
+│   ├── db.Database.java
 │   ├── DatabaseManager.java
 │   └── dao/
-│       └── ItemDAO.java
-│
-├── model/
-│   └── Item.java
-│
-└── util/
-    └── (optional helpers later)
+│       └── ItemDAO.java (Optional if DatabaseManager gets too big)

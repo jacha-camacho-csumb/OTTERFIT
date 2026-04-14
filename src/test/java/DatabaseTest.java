@@ -9,11 +9,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+
+import db.Database;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * CSUMB CS ONLINE PROGRAM - Database Tests Provides integration tests for the SQLite database used
+ * CSUMB CS ONLINE PROGRAM - db.Database Tests Provides integration tests for the SQLite database used
  * in the OtterFit app. Tests cover database creation, schema validation, seed data, and CRUD
  * operations for all tables: users, exercises, workouts, and workout_entries.
  *
@@ -26,8 +28,13 @@ class DatabaseTest {
 
   /**
    * JDBC connection string for the SQLite database
+   * NOTE: Use test database to avoid stepping on app database
    */
-  private static final String DB_URL = "jdbc:sqlite:otterfit_app.db";
+  private static final String DB_NAME = "test.db";
+  private static final String DB_URL = "jdbc:sqlite:" + DB_NAME;
+  private static final String TEMP_DB = "jdbc:sqlite::memory:";
+
+  private Database db;
 
   /**
    * Runs before each test. Deletes any existing database file and recreates it to ensure a clean
@@ -35,11 +42,16 @@ class DatabaseTest {
    */
   @BeforeEach
   void setup() {
-    File dbFile = new File("otterfit_app.db");
+    File dbFile = new File(DB_NAME);
     if (dbFile.exists()) {
       dbFile.delete();
     }
-    Database.main(new String[]{});
+    try {
+      db = new Database(DB_URL);
+      db.initialize();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   // - Basic Setup Tests -
@@ -49,8 +61,8 @@ class DatabaseTest {
    */
   @Test
   void testDatabaseCreation() {
-    File dbFile = new File("otterfit_app.db");
-    assertTrue(dbFile.exists(), "Database file should be created");
+    File dbFile = new File(DB_NAME);
+    assertTrue(dbFile.exists(), "db.Database file should be created");
   }
 
   /**
@@ -71,7 +83,12 @@ class DatabaseTest {
    */
   @Test
   void testSeedDataInserted() throws SQLException {
-    try (Connection conn = getConnection()) {
+    try (Connection conn = DriverManager.getConnection(TEMP_DB)) {
+      // try this method of in memory database, maybe
+      // consider for all tests:
+      Database db_temp = new Database(conn);
+      db_temp.initialize();
+
       assertEquals(1, countRows(conn, "users"));
       assertEquals(3, countRows(conn, "exercises"));
       assertEquals(1, countRows(conn, "workouts"));
@@ -84,9 +101,12 @@ class DatabaseTest {
    */
   @Test
   void testIdempotentSeeding() throws SQLException {
-    Database.main(new String[]{});
+    try (Connection conn = DriverManager.getConnection(TEMP_DB)) {
+      // try in memory db, then initialize twice
+      Database db_temp = new Database(conn);
+      db_temp.initialize();
+      db_temp.initialize();
 
-    try (Connection conn = getConnection()) {
       assertEquals(1, countRows(conn, "users"));
       assertEquals(3, countRows(conn, "exercises"));
       assertEquals(1, countRows(conn, "workouts"));
@@ -163,6 +183,7 @@ class DatabaseTest {
   @Test
   void testDeleteUser() throws SQLException {
     try (Connection conn = getConnection()) {
+      int startCount = countRows(conn, "users");
       String sql = "DELETE FROM users WHERE username = ?";
       try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, "otter");
@@ -170,7 +191,7 @@ class DatabaseTest {
         assertEquals(1, rows);
       }
 
-      assertEquals(0, countRows(conn, "users"));
+      assertEquals(startCount -1, countRows(conn, "users"));
     }
   }
 
@@ -377,7 +398,10 @@ class DatabaseTest {
    */
   @Test
   void testReadWorkoutEntry() throws SQLException {
-    try (Connection conn = getConnection()) {
+    try (Connection conn = DriverManager.getConnection(TEMP_DB)) {
+      // try the in memory database again for this test
+      Database db_temp = new Database(conn);
+      db_temp.initialize();
       int exerciseId = getExerciseIdByName(conn, "Push-Up");
 
       String sql = "SELECT * FROM workout_entries WHERE exercise_id = ? AND sets = ?";

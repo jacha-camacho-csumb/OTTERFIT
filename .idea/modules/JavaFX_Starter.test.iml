@@ -14,9 +14,6 @@
     <orderEntry type="library" name="Gradle: org.openjfx:javafx-fxml:win:22" level="project" />
     <orderEntry type="library" name="Gradle: org.openjfx:javafx-controls:win:22" level="project" />
     <orderEntry type="library" name="Gradle: org.junit.jupiter:junit-jupiter:5.10.0" level="project" />
-    <orderEntry type="library" name="Gradle: org.testfx:testfx-junit5:4.0.18" level="project" />
-    <orderEntry type="library" name="Gradle: org.testfx:testfx-core:4.0.18" level="project" />
-    <orderEntry type="library" name="Gradle: org.hamcrest:hamcrest:2.2" level="project" />
     <orderEntry type="library" name="Gradle: org.openjfx:javafx-graphics:win:22" level="project" />
     <orderEntry type="library" name="Gradle: org.junit.jupiter:junit-jupiter-params:5.10.0" level="project" />
     <orderEntry type="library" name="Gradle: org.junit.jupiter:junit-jupiter-api:5.10.0" level="project" />
@@ -27,8 +24,6 @@
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.junit.platform:junit-platform-launcher:1.10.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.junit.jupiter:junit-jupiter-engine:5.10.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.junit.platform:junit-platform-engine:1.10.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.assertj:assertj-core:3.13.2" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.osgi:org.osgi.core:6.0.0" level="project" />
   </component>
   <component name="TestModuleProperties" production-module="JavaFX_Starter.main" />
 </module>

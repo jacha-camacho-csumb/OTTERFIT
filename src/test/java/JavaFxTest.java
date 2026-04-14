@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * [Testing for the JavaFX UI Scenes and Transitions.]
- *
+ * Fixed Git Files for viewing making new branch to push changes.
  * @author Christian Hoefer
  * @version 0.1.0
  * @since 4/13/2026

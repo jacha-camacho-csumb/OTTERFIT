@@ -12,4 +12,18 @@ import javafc.scene.control.Alert;
  */
 
 public class WorkoutController {
+    /**
+     * Handles the log workout action by showing a success alert
+     * This method is triggered when the user logs a workout
+     *
+     * @return void
+     */
+    @FXML
+    private void handleWorkout() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Workout Logged");
+        alert.setHeaderText(null);
+        alert.setContentText("Workout logged successfully");
+        alert.showAndWait():
+    }
 }

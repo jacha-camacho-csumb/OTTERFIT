@@ -1,7 +1,7 @@
 package ui.workout;
 
 import javafx.fxml.FXML;
-import javafc.scene.control.Alert;
+import javafx.scene.control.Alert;
 
 /**
  * Handles user actions for logging and deleting workouts by displaying alerts.
@@ -19,14 +19,20 @@ public class WorkoutController {
      * @return void
      */
     @FXML
-    private void handleWorkout() {
+    private void handleWorkout()() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Workout Logged");
         alert.setHeaderText(null);
         alert.setContentText("Workout logged successfully");
-        alert.showAndWait():
+        alert.showAndWait();
     }
 
+    /**
+     * Handles the delete workout action by confirming deletion and showing a
+     * sucess alert if the user proceeds.
+     *
+     * @return void
+     */
     @FXML
     private void handleDeleteWorkout(){
 

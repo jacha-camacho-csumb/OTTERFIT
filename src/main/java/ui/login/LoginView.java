@@ -23,6 +23,13 @@ import javafx.scene.text.Font;
  */
 
 public class LoginView {
+
+    public static final String loginTitle = "loginTitle";
+    public static final String loginButton = "loginButton";
+    public static final String usernameField = "usernameField";
+    public static final String passwordField = "passwordField";
+    public static final String messageField = "messageField";
+
     public static Scene createScene(Stage stage, Database db) {
 
         VBox root = new VBox(15);
@@ -31,26 +38,31 @@ public class LoginView {
         root.setStyle("-fx-background-color: #f2f2f2;");
 
         // Title
-        Label title = new Label("FitnessApp Login");
+        Label title = new Label("OtterFit Login");
         title.setFont(new Font("Arial", 26));
+        title.setId(LoginView.loginTitle);
 
         // Username
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
         usernameField.setMaxWidth(300);
+        usernameField.setId(LoginView.usernameField);
 
         // Password
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
         passwordField.setMaxWidth(300);
+        passwordField.setId(LoginView.passwordField);
 
         // Message
         Label message = new Label();
         message.setTextFill(Color.RED);
+        message.setId(LoginView.messageField);
 
         // Login button
         Button loginButton = new Button("Login");
         loginButton.setMaxWidth(300);
+        loginButton.setId(LoginView.loginButton);
         loginButton.setStyle("""
             -fx-background-color: #4A90E2;
             -fx-text-fill: white;

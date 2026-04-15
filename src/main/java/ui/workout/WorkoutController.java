@@ -34,5 +34,14 @@ public class WorkoutController {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirm Delete");
         confirm.setContentText("Are you sure you want to delete this workout?");
+
+        // If user confirms, show success alert
+        if (confirm.showAndWait().isPresent()) {
+            Alert success = new Alert(Alert.AlertType.INFORMATION);
+            success.setTitle("Workout Deleted");
+            success.setHeaderText(null);
+            success.setContentText("Workout deleted successfully");
+            success.showAndWait();
+        }
     }
 }

@@ -26,4 +26,13 @@ public class WorkoutController {
         alert.setContentText("Workout logged successfully");
         alert.showAndWait():
     }
+
+    @FXML
+    private void handleDeleteWorkout(){
+
+        // Create confirmation alert before deleting workout
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Delete");
+        confirm.setContentText("Are you sure you want to delete this workout?");
+    }
 }

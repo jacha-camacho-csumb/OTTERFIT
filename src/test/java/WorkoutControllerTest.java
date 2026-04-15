@@ -12,4 +12,15 @@ import ui.workout.WorkoutController;
 
 
 public class WorkoutControllerTest {
+    /**
+     * Tests that the WorkoutController object is created successfully
+     *
+     * @return void
+     */
+    @Test
+    void testWorkoutControllerExists() {
+            WorkoutController controller = new WorkoutController();
+            assertNotNull(controller);
+
+    }
 }

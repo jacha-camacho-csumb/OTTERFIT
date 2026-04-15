@@ -1,5 +1,7 @@
+import db.Database;
 import factory.SceneFactory;
 import factory.SceneType;
+import java.sql.SQLException;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
@@ -21,15 +23,17 @@ import static org.junit.jupiter.api.Assertions.*;
 public class JavaFxTest {
 
     private Stage testStage;
+    private Database db;
 
     @Start
-    public void start(Stage stage){
+    public void start(Stage stage) throws SQLException {
         this.testStage = stage;
-        //Set the window title
+        this.db = new Database();
+        // Set the window title
         stage.setTitle("OtterFit");
-        //Load the main scene
-        stage.setScene(SceneFactory.create(SceneType.MAIN, stage));
-        //Show the window
+        // Load the main scene
+        stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db));
+        // Show the window
         stage.show();
     }
 

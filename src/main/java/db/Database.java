@@ -225,6 +225,9 @@ public class Database {
     upsertWorkoutEntry(workoutId, squatId, 3, 15, 0.0, null, null);
     upsertWorkoutEntry(workoutId, runId, null, null, null, 20.0, 2.5);
   }
+  /***********************************************************
+   *                   USER                                  *
+   ***********************************************************/
   /**
    * Inserts a user if not already present.
    *
@@ -278,6 +281,26 @@ public class Database {
   }
 
   /**
+   * Validates the username and password.
+   *
+   * @return boolean
+   */
+  public boolean validateUser(String username, String password) throws SQLException {
+    String sql = "SELECT 1 FROM users WHERE username = ? AND password_plaintext = ?";
+
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+      ps.setString(1, username);
+      ps.setString(2, password);
+
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next();
+      }
+    }
+  }
+  /***********************************************************
+   *                   EXERCISE                              *
+   ***********************************************************/
+  /**
    * Inserts an exercise if it does not already exist for the user.
    *
    * @return exercise_id
@@ -328,7 +351,9 @@ public class Database {
     }
     return null;
   }
-
+  /***********************************************************
+   *                   WORKOUT                               *
+   ***********************************************************/
   /**
    * Inserts a workout if it does not already exist.
    *
@@ -486,7 +511,9 @@ public class Database {
     }
     return null;
   }
-
+  /***********************************************************
+   *                   utilities                             *
+   ***********************************************************/
   /**
    * Utility method to safely set Integer values.
    */
@@ -509,5 +536,45 @@ public class Database {
     } else {
       ps.setDouble(index, value);
     }
+  }
+  /**
+   * Utility method to dump all tables to a string for debug display
+   */
+  public String dumpAllTables() {
+    StringBuilder sb = new StringBuilder();
+
+    String[] tables = {"users", "exercises", "workouts", "workout_entries"};
+
+    for (String table : tables) {
+      sb.append("=== ").append(table).append(" ===\n");
+
+      try (Statement stmt = connection.createStatement();
+           ResultSet rs = stmt.executeQuery("SELECT * FROM " + table)) {
+
+        ResultSetMetaData meta = rs.getMetaData();
+        int colCount = meta.getColumnCount();
+
+        // Column headers
+        for (int i = 1; i <= colCount; i++) {
+          sb.append(meta.getColumnName(i)).append("\t");
+        }
+        sb.append("\n");
+
+        // Rows
+        while (rs.next()) {
+          for (int i = 1; i <= colCount; i++) {
+            sb.append(rs.getString(i)).append("\t");
+          }
+          sb.append("\n");
+        }
+
+      } catch (SQLException e) {
+        sb.append("Error reading table\n");
+      }
+
+      sb.append("\n");
+    }
+
+    return sb.toString();
   }
 }

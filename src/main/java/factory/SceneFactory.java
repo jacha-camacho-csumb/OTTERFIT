@@ -3,6 +3,7 @@ package factory;
 import db.Database;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import ui.utility.DatabaseView;
 
 /**
  * SceneFactory
@@ -22,11 +23,18 @@ public abstract class SceneFactory {
         return switch(type) {
             case MAIN -> ui.main.MainView.createScene(stage, db);
             case LOGIN -> ui.login.LoginView.createScene(stage, db);
+            case DATABASE -> ui.utility.DatabaseView.createScene(stage, db, SceneType.MAIN);
         };
     }
-
-    // For popups (like login, returns Stage instead of Scene)
-    public static Stage createLoginPopup(Stage owner) {
-        return ui.login.LoginView.createPopup(owner);
+    /*
+    Overload create with a method that includes a returnTo
+     */
+    public static Scene create(SceneType type, Stage stage, Database db, SceneType returnTo) {
+        switch(type) {
+            case DATABASE:
+                return DatabaseView.createScene(stage, db, returnTo);
+            default:
+                return create(type, stage, db);
+        }
     }
 }

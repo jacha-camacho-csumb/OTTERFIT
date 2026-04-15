@@ -1,3 +1,4 @@
+import db.Database;
 import factory.SceneFactory;
 import factory.SceneType;
 import javafx.scene.control.Button;
@@ -8,6 +9,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -21,14 +27,22 @@ import static org.junit.jupiter.api.Assertions.*;
 public class JavaFxTest {
 
     private Stage testStage;
+    private Database db;
+    private static final String TEMP_DB = "jdbc:sqlite::memory:";
 
     @Start
-    public void start(Stage stage){
+    public void start(Stage stage) throws SQLException {
         this.testStage = stage;
         //Set the window title
         stage.setTitle("OtterFit");
+
+        // Load a database and store it in memory
+        Connection conn = DriverManager.getConnection(TEMP_DB);
+        db = new Database(conn);
+        db.initialize();
+
         //Load the main scene
-        stage.setScene(SceneFactory.create(SceneType.MAIN, stage));
+        stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db));
         //Show the window
         stage.show();
     }

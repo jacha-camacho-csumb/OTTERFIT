@@ -10,5 +10,6 @@ package factory;
  */
 public enum SceneType {
     MAIN,
-    LOGIN
+    LOGIN,
+    DATABASE
 }

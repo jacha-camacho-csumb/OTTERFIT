@@ -27,7 +27,7 @@ public class Main extends Application {
     try {
       Database db = new Database();
 
-      stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db));
+      stage.setScene(SceneFactory.create(SceneType.LOGIN, stage, db));
       stage.show();
     } catch (SQLException e) {
       System.out.println("Error opening db: " + e);

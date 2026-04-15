@@ -23,11 +23,6 @@ public class MainView {
         Label label = new Label("Main Screen");
         StackPane layout = new StackPane(label);
 
-        // Show login popup after main loads
-        stage.setOnShown(e -> {
-            SceneFactory.createLoginPopup(stage).show();
-        });
-
         return new Scene(layout, 400, 300);
     }
 }

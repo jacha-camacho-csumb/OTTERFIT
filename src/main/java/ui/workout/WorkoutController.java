@@ -19,7 +19,7 @@ public class WorkoutController {
      * @return void
      */
     @FXML
-    private void handleWorkout()() {
+    private void handleLogWorkout() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Workout Logged");
         alert.setHeaderText(null);
@@ -29,7 +29,7 @@ public class WorkoutController {
 
     /**
      * Handles the delete workout action by confirming deletion and showing a
-     * sucess alert if the user proceeds.
+     * success alert if the user proceeds.
      *
      * @return void
      */

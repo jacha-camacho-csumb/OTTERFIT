@@ -218,3 +218,7 @@ Created using Draw.io
 
 ```bash
 git clone https://github.com/jacha-camacho-csumb/OTTERFIT
+```
+
+### Database Notes
+For details on how to use the Database class see [Database](docs/Database.md)

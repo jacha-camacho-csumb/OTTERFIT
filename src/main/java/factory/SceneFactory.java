@@ -1,5 +1,6 @@
 package factory;
 
+import db.Database;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -17,10 +18,10 @@ public abstract class SceneFactory {
     private static final int SCENE_WIDTH = 400;
     private static final int SCENE_HEIGHT = 300;
 
-    public static Scene create(SceneType type, Stage stage) {
+    public static Scene create(SceneType type, Stage stage, Database db) {
         return switch(type) {
-            case MAIN -> ui.main.MainView.createScene(stage);
-            case LOGIN -> ui.login.LoginView.createScene(stage);
+            case MAIN -> ui.main.MainView.createScene(stage, db);
+            case LOGIN -> ui.login.LoginView.createScene(stage, db);
         };
     }
 

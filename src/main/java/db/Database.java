@@ -1,9 +1,8 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+package db;
+
+import config.AppConfig;
+
+import java.sql.*;
 
 /**
  * CSUMB CS ONLINE PROGRAM - Initializes and seeds a SQLite database for OtterFit fitness app.
@@ -15,7 +14,7 @@ import java.sql.Statement;
  */
 
 /**
- * Database.java Creates otterfit_app.db, defines schema (users, exercises, workouts,
+ * db.Database.java Creates otterfit_app.db, defines schema (users, exercises, workouts,
  * workout_entries), and inserts example data safely without duplicating it on repeated runs.
  * Requires SQLite JDBC driver on the classpath.
  */
@@ -25,52 +24,74 @@ public class Database {
   /**
    * JDBC connection string for the SQLite database file
    */
-  private static final String DB_URL = "jdbc:sqlite:otterfit_app.db";
+  private static final String DB_URL = AppConfig.DB_URL;
+
+  // Use a single connection for the entire class
+  private final Connection connection;
 
   /**
    * Entry point of the program. Initializes the database and prints status messages.
    */
   public static void main(String[] args) {
     try {
-      createDatabaseAndSeedData();
-      System.out.println("Database setup complete: otterfit_app.db");
+//      Database db = new Database(DB_URL);
+      Database db = new Database("jdbc:sqlite:test.db");
+      db.initialize();
+//      createDatabaseAndSeedData(); // renamed to initialize
+      System.out.println("db.Database setup complete: otterfit_app.db");
     } catch (SQLException e) {
-      System.err.println("Database setup failed. :-(");
+      System.err.println("db.Database setup failed. :-(");
       e.printStackTrace();
     }
   }
 
+  public Database() throws SQLException {
+    this(DB_URL);
+  }
+
+  public Database(String dbUrl) throws SQLException {
+    try {
+      // Opens (or creates) app.db in the project root
+      connection = DriverManager.getConnection(dbUrl);
+      System.out.println("Database connected.");
+    } catch (SQLException e) {
+      System.err.println("Connection failed: " +
+              e.getMessage());
+      throw e;
+    }
+  }
+
+  public Database(Connection connection) {
+    this.connection = connection;
+  }
+
   /**
-   * Establishes a connection and orchestrates database setup. Uses a transaction to ensure atomic
+   * Orchestrates database setup. Uses a transaction to ensure atomic
    * setup (rollback on failure).
    *
-   * @throws SQLException if any database operation fails
    */
-  private static void createDatabaseAndSeedData() throws SQLException {
-    try (Connection conn = DriverManager.getConnection(DB_URL)) {
-      conn.setAutoCommit(false);
+  public void initialize() throws SQLException {
+    connection.setAutoCommit(false);
 
-      try {
-        enableForeignKeys(conn);
-        createTables(conn);
-        createIndexes(conn);
-        seedExampleData(conn);
-        conn.commit();
+    try {
+        enableForeignKeys();
+        createTables();
+        createIndexes();
+        seedExampleData();
+        connection.commit();
       } catch (SQLException e) {
-        conn.rollback();
+        connection.rollback();
         throw e;
       }
     }
-  }
 
   /**
    * Enables enforcement of foreign key constraints in SQLite.
    *
-   * @param conn active database connection
    * @throws SQLException if execution fails
    */
-  private static void enableForeignKeys(Connection conn) throws SQLException {
-    try (Statement stmt = conn.createStatement()) {
+  private void enableForeignKeys() throws SQLException {
+    try (Statement stmt = connection.createStatement()) {
       stmt.execute("PRAGMA foreign_keys = ON;");
     }
   }
@@ -78,10 +99,9 @@ public class Database {
   /**
    * Creates all required tables if they do not already exist.
    *
-   * @param conn active database connection
    * @throws SQLException if table creation fails
    */
-  private static void createTables(Connection conn) throws SQLException {
+  private void createTables() throws SQLException {
     String createUsers = """
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -138,7 +158,7 @@ public class Database {
         );
         """;
 
-    try (Statement stmt = conn.createStatement()) {
+    try (Statement stmt = connection.createStatement()) {
       stmt.execute(createUsers);
       stmt.execute(createExercises);
       stmt.execute(createWorkouts);
@@ -149,10 +169,9 @@ public class Database {
   /**
    * Creates indexes to improve query performance on foreign keys.
    *
-   * @param conn active database connection
    * @throws SQLException if index creation fails
    */
-  private static void createIndexes(Connection conn) throws SQLException {
+  private void createIndexes() throws SQLException {
     String idxExercisesUser = """
         CREATE INDEX IF NOT EXISTS idx_exercises_user_id
         ON exercises(user_id);
@@ -173,7 +192,7 @@ public class Database {
         ON workout_entries(exercise_id);
         """;
 
-    try (Statement stmt = conn.createStatement()) {
+    try (Statement stmt = connection.createStatement()) {
       stmt.execute(idxExercisesUser);
       stmt.execute(idxWorkoutsUser);
       stmt.execute(idxEntriesWorkout);
@@ -185,46 +204,44 @@ public class Database {
    * Inserts example data into the database. Uses "upsert"-style helpers to avoid duplicate
    * records.
    *
-   * @param conn active database connection
    * @throws SQLException if insertion fails
    */
-  private static void seedExampleData(Connection conn) throws SQLException {
-    int userId = upsertUser(conn, "otter", "otter@csumb.edu", "otter");
+  private void seedExampleData() throws SQLException {
+    int userId = upsertUser("otter", "otter@csumb.edu", "otter");
 
-    int pushupId = upsertExercise(conn, userId, "Push-Up", "Strength",
+    int pushupId = upsertExercise(userId, "Push-Up", "Strength",
         "A bodyweight chest, shoulder, and triceps exercise.");
 
-    int squatId = upsertExercise(conn, userId, "Bodyweight Squat", "Strength",
+    int squatId = upsertExercise(userId, "Bodyweight Squat", "Strength",
         "A lower-body exercise focusing on quads, glutes, and hamstrings.");
 
-    int runId = upsertExercise(conn, userId, "Treadmill Run", "Cardio",
+    int runId = upsertExercise(userId, "Treadmill Run", "Cardio",
         "A steady-paced indoor running workout.");
 
-    int workoutId = upsertWorkout(conn, userId, "2026-04-12",
+    int workoutId = upsertWorkout(userId, "2026-04-12",
         "Full body starter workout.");
 
-    upsertWorkoutEntry(conn, workoutId, pushupId, 3, 12, 0.0, null, null);
-    upsertWorkoutEntry(conn, workoutId, squatId, 3, 15, 0.0, null, null);
-    upsertWorkoutEntry(conn, workoutId, runId, null, null, null, 20.0, 2.5);
+    upsertWorkoutEntry(workoutId, pushupId, 3, 12, 0.0, null, null);
+    upsertWorkoutEntry(workoutId, squatId, 3, 15, 0.0, null, null);
+    upsertWorkoutEntry(workoutId, runId, null, null, null, 20.0, 2.5);
   }
-
   /**
    * Inserts a user if not already present.
    *
    * @return user_id of existing or newly created user
    */
-  private static int upsertUser(Connection conn, String username, String email,
-      String passwordPlaintext)
-      throws SQLException {
+  private int upsertUser(String username, String email,
+                                String passwordPlaintext)
+          throws SQLException {
 
-    Integer existingId = findUserIdByUsername(conn, username);
+    Integer existingId = findUserIdByUsername(username);
     if (existingId != null) {
       return existingId;
     }
 
     String sql = "INSERT INTO users (username, email, password_plaintext) VALUES (?, ?, ?);";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       ps.setString(1, username);
       ps.setString(2, email);
       ps.setString(3, passwordPlaintext);
@@ -245,11 +262,11 @@ public class Database {
    *
    * @return user_id or null if not found
    */
-  private static Integer findUserIdByUsername(Connection conn, String username)
-      throws SQLException {
+  private Integer findUserIdByUsername(String username)
+          throws SQLException {
     String sql = "SELECT user_id FROM users WHERE username = ?;";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
       ps.setString(1, username);
       try (ResultSet rs = ps.executeQuery()) {
         if (rs.next()) {
@@ -265,18 +282,18 @@ public class Database {
    *
    * @return exercise_id
    */
-  private static int upsertExercise(Connection conn, int userId, String name, String category,
-      String description)
-      throws SQLException {
+  private int upsertExercise(int userId, String name, String category,
+                                    String description)
+          throws SQLException {
 
-    Integer existingId = findExerciseId(conn, userId, name);
+    Integer existingId = findExerciseId(userId, name);
     if (existingId != null) {
       return existingId;
     }
 
     String sql = "INSERT INTO exercises (user_id, name, category, description) VALUES (?, ?, ?, ?);";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       ps.setInt(1, userId);
       ps.setString(2, name);
       ps.setString(3, category);
@@ -296,11 +313,11 @@ public class Database {
   /**
    * Finds an exercise ID for a user by name.
    */
-  private static Integer findExerciseId(Connection conn, int userId, String name)
-      throws SQLException {
+  private Integer findExerciseId(int userId, String name)
+          throws SQLException {
     String sql = "SELECT exercise_id FROM exercises WHERE user_id = ? AND name = ?;";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
       ps.setInt(1, userId);
       ps.setString(2, name);
       try (ResultSet rs = ps.executeQuery()) {
@@ -317,17 +334,17 @@ public class Database {
    *
    * @return workout_id
    */
-  private static int upsertWorkout(Connection conn, int userId, String workoutDate, String notes)
-      throws SQLException {
+  private int upsertWorkout(int userId, String workoutDate, String notes)
+          throws SQLException {
 
-    Integer existingId = findWorkoutId(conn, userId, workoutDate, notes);
+    Integer existingId = findWorkoutId(userId, workoutDate, notes);
     if (existingId != null) {
       return existingId;
     }
 
     String sql = "INSERT INTO workouts (user_id, workout_date, notes) VALUES (?, ?, ?);";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       ps.setInt(1, userId);
       ps.setString(2, workoutDate);
       ps.setString(3, notes);
@@ -346,9 +363,9 @@ public class Database {
   /**
    * Finds a workout by user, date, and notes.
    */
-  private static Integer findWorkoutId(Connection conn, int userId, String workoutDate,
-      String notes)
-      throws SQLException {
+  private Integer findWorkoutId(int userId, String workoutDate,
+                                       String notes)
+          throws SQLException {
 
     String sql = """
         SELECT workout_id FROM workouts
@@ -357,7 +374,7 @@ public class Database {
           AND ((notes = ?) OR (notes IS NULL AND ? IS NULL));
         """;
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
       ps.setInt(1, userId);
       ps.setString(2, workoutDate);
       ps.setString(3, notes);
@@ -377,19 +394,18 @@ public class Database {
    *
    * @return entry_id
    */
-  private static int upsertWorkoutEntry(
-      Connection conn,
-      int workoutId,
-      int exerciseId,
-      Integer sets,
-      Integer reps,
-      Double weight,
-      Double durationMinutes,
-      Double distance
+  private int upsertWorkoutEntry(
+          int workoutId,
+          int exerciseId,
+          Integer sets,
+          Integer reps,
+          Double weight,
+          Double durationMinutes,
+          Double distance
   ) throws SQLException {
 
     Integer existingId = findWorkoutEntryId(
-        conn, workoutId, exerciseId, sets, reps, weight, durationMinutes, distance
+            workoutId, exerciseId, sets, reps, weight, durationMinutes, distance
     );
 
     if (existingId != null) {
@@ -402,7 +418,7 @@ public class Database {
         ) VALUES (?, ?, ?, ?, ?, ?, ?);
         """;
 
-    try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       ps.setInt(1, workoutId);
       ps.setInt(2, exerciseId);
       setIntegerOrNull(ps, 3, sets);
@@ -426,15 +442,14 @@ public class Database {
   /**
    * Finds an existing workout entry with matching values.
    */
-  private static Integer findWorkoutEntryId(
-      Connection conn,
-      int workoutId,
-      int exerciseId,
-      Integer sets,
-      Integer reps,
-      Double weight,
-      Double durationMinutes,
-      Double distance
+  private Integer findWorkoutEntryId(
+          int workoutId,
+          int exerciseId,
+          Integer sets,
+          Integer reps,
+          Double weight,
+          Double durationMinutes,
+          Double distance
   ) throws SQLException {
 
     String sql = """
@@ -448,7 +463,7 @@ public class Database {
           AND ((distance = ?) OR (distance IS NULL AND ? IS NULL));
         """;
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
       ps.setInt(1, workoutId);
       ps.setInt(2, exerciseId);
 
@@ -476,7 +491,7 @@ public class Database {
    * Utility method to safely set Integer values.
    */
   private static void setIntegerOrNull(PreparedStatement ps, int index, Integer value)
-      throws SQLException {
+          throws SQLException {
     if (value == null) {
       ps.setNull(index, java.sql.Types.INTEGER);
     } else {
@@ -488,7 +503,7 @@ public class Database {
    * Utility method to safely set Double values.
    */
   private static void setDoubleOrNull(PreparedStatement ps, int index, Double value)
-      throws SQLException {
+          throws SQLException {
     if (value == null) {
       ps.setNull(index, java.sql.Types.REAL);
     } else {

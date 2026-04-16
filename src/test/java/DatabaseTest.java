@@ -1,6 +1,7 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import db.Database;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,26 +10,28 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-
-import db.Database;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * CSUMB CS ONLINE PROGRAM - db.Database Tests Provides integration tests for the SQLite database used
- * in the OtterFit app. Tests cover database creation, schema validation, seed data, and CRUD
- * operations for all tables: users, exercises, workouts, and workout_entries.
+ * CSUMB CS ONLINE PROGRAM - db.Database Tests
+ *
+ * Provides integration tests for the SQLite database used in the OtterFit app.
+ * Tests cover database creation, schema validation, seed data, and CRUD
+ * operations for all tables: users, exercises, and workouts.
+ *
+ * Updated to match the simplified schema where workout_entries has been removed
+ * and workouts now directly reference exercises.
  *
  * @author : Jose Acha-Camacho
- * @version : 0.2.0
+ * @version : 0.3.0
  * @created : 4/12/26, Sunday
  */
-
 class DatabaseTest {
 
   /**
-   * JDBC connection string for the SQLite database
-   * NOTE: Use test database to avoid stepping on app database
+   * JDBC connection string for the SQLite database.
+   * NOTE: Use test database to avoid stepping on app database.
    */
   private static final String DB_NAME = "test.db";
   private static final String DB_URL = "jdbc:sqlite:" + DB_NAME;
@@ -37,8 +40,8 @@ class DatabaseTest {
   private Database db;
 
   /**
-   * Runs before each test. Deletes any existing database file and recreates it to ensure a clean
-   * state.
+   * Runs before each test. Deletes any existing database file and recreates it
+   * to ensure a clean state.
    */
   @BeforeEach
   void setup() {
@@ -46,6 +49,7 @@ class DatabaseTest {
     if (dbFile.exists()) {
       dbFile.delete();
     }
+
     try {
       db = new Database(DB_URL);
       db.initialize();
@@ -54,7 +58,7 @@ class DatabaseTest {
     }
   }
 
-  // - Basic Setup Tests -
+  // ---------- Basic Setup Tests ----------
 
   /**
    * Verifies that the database file is created successfully.
@@ -62,7 +66,7 @@ class DatabaseTest {
   @Test
   void testDatabaseCreation() {
     File dbFile = new File(DB_NAME);
-    assertTrue(dbFile.exists(), "db.Database file should be created");
+    assertTrue(dbFile.exists(), "Database file should be created");
   }
 
   /**
@@ -74,7 +78,6 @@ class DatabaseTest {
       assertTrue(tableExists(conn, "users"));
       assertTrue(tableExists(conn, "exercises"));
       assertTrue(tableExists(conn, "workouts"));
-      assertTrue(tableExists(conn, "workout_entries"));
     }
   }
 
@@ -84,15 +87,12 @@ class DatabaseTest {
   @Test
   void testSeedDataInserted() throws SQLException {
     try (Connection conn = DriverManager.getConnection(TEMP_DB)) {
-      // try this method of in memory database, maybe
-      // consider for all tests:
-      Database db_temp = new Database(conn);
-      db_temp.initialize();
+      Database dbTemp = new Database(conn);
+      dbTemp.initialize();
 
       assertEquals(1, countRows(conn, "users"));
       assertEquals(3, countRows(conn, "exercises"));
-      assertEquals(1, countRows(conn, "workouts"));
-      assertEquals(3, countRows(conn, "workout_entries"));
+      assertEquals(3, countRows(conn, "workouts"));
     }
   }
 
@@ -102,19 +102,17 @@ class DatabaseTest {
   @Test
   void testIdempotentSeeding() throws SQLException {
     try (Connection conn = DriverManager.getConnection(TEMP_DB)) {
-      // try in memory db, then initialize twice
-      Database db_temp = new Database(conn);
-      db_temp.initialize();
-      db_temp.initialize();
+      Database dbTemp = new Database(conn);
+      dbTemp.initialize();
+      dbTemp.initialize();
 
       assertEquals(1, countRows(conn, "users"));
       assertEquals(3, countRows(conn, "exercises"));
-      assertEquals(1, countRows(conn, "workouts"));
-      assertEquals(3, countRows(conn, "workout_entries"));
+      assertEquals(3, countRows(conn, "workouts"));
     }
   }
 
-  // - CRUD Tests: USERS -
+  // ---------- CRUD Tests: USERS ----------
 
   /**
    * Tests inserting a new user into the users table.
@@ -184,6 +182,7 @@ class DatabaseTest {
   void testDeleteUser() throws SQLException {
     try (Connection conn = getConnection()) {
       int startCount = countRows(conn, "users");
+
       String sql = "DELETE FROM users WHERE username = ?";
       try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, "otter");
@@ -191,11 +190,11 @@ class DatabaseTest {
         assertEquals(1, rows);
       }
 
-      assertEquals(startCount -1, countRows(conn, "users"));
+      assertEquals(startCount - 1, countRows(conn, "users"));
     }
   }
 
-  // -CRUD Tests: EXERCISES -
+  // ---------- CRUD Tests: EXERCISES ----------
 
   /**
    * Tests inserting a new exercise into the exercises table.
@@ -278,7 +277,7 @@ class DatabaseTest {
     }
   }
 
-  // - CRUD Tests: WORKOUTS -
+  // ---------- CRUD Tests: WORKOUTS ----------
 
   /**
    * Tests inserting a new workout into the workouts table.
@@ -287,17 +286,24 @@ class DatabaseTest {
   void testCreateWorkout() throws SQLException {
     try (Connection conn = getConnection()) {
       int userId = getUserIdByUsername(conn, "otter");
+      int exerciseId = getExerciseIdByName(conn, "Push-Up");
 
-      String sql = "INSERT INTO workouts (user_id, workout_date, notes) VALUES (?, ?, ?)";
+      String sql = """
+          INSERT INTO workouts (user_id, exercise_id, workout_date, notes, duration_minutes)
+          VALUES (?, ?, ?, ?, ?)
+          """;
+
       try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setInt(1, userId);
-        ps.setString(2, "2026-04-13");
-        ps.setString(3, "Leg day workout.");
+        ps.setInt(2, exerciseId);
+        ps.setString(3, "2026-04-13");
+        ps.setString(4, "Upper body workout.");
+        ps.setNull(5, Types.REAL);
         int rows = ps.executeUpdate();
         assertEquals(1, rows);
       }
 
-      assertEquals(2, countRows(conn, "workouts"));
+      assertEquals(4, countRows(conn, "workouts"));
     }
   }
 
@@ -307,13 +313,20 @@ class DatabaseTest {
   @Test
   void testReadWorkout() throws SQLException {
     try (Connection conn = getConnection()) {
-      String sql = "SELECT * FROM workouts WHERE workout_date = ?";
+      String sql = """
+          SELECT w.*, e.name AS exercise_name
+          FROM workouts w
+          JOIN exercises e ON w.exercise_id = e.exercise_id
+          WHERE w.workout_date = ? AND e.name = ?
+          """;
+
       try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, "2026-04-12");
+        ps.setString(2, "Push-Up");
         ResultSet rs = ps.executeQuery();
 
         assertTrue(rs.next());
-        assertEquals("Full body starter workout.", rs.getString("notes"));
+        assertEquals("Chest work", rs.getString("notes"));
       }
     }
   }
@@ -324,17 +337,21 @@ class DatabaseTest {
   @Test
   void testUpdateWorkout() throws SQLException {
     try (Connection conn = getConnection()) {
-      String sql = "UPDATE workouts SET notes = ? WHERE workout_date = ?";
+      int exerciseId = getExerciseIdByName(conn, "Push-Up");
+
+      String sql = "UPDATE workouts SET notes = ? WHERE workout_date = ? AND exercise_id = ?";
       try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, "Updated workout notes.");
         ps.setString(2, "2026-04-12");
+        ps.setInt(3, exerciseId);
         int rows = ps.executeUpdate();
         assertEquals(1, rows);
       }
 
       try (PreparedStatement ps = conn.prepareStatement(
-          "SELECT notes FROM workouts WHERE workout_date = ?")) {
+          "SELECT notes FROM workouts WHERE workout_date = ? AND exercise_id = ?")) {
         ps.setString(1, "2026-04-12");
+        ps.setInt(2, exerciseId);
         ResultSet rs = ps.executeQuery();
 
         assertTrue(rs.next());
@@ -349,123 +366,22 @@ class DatabaseTest {
   @Test
   void testDeleteWorkout() throws SQLException {
     try (Connection conn = getConnection()) {
-      String sql = "DELETE FROM workouts WHERE workout_date = ?";
+      int startCount = countRows(conn, "workouts");
+      int exerciseId = getExerciseIdByName(conn, "Push-Up");
+
+      String sql = "DELETE FROM workouts WHERE workout_date = ? AND exercise_id = ?";
       try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, "2026-04-12");
-        int rows = ps.executeUpdate();
-        assertEquals(1, rows);
-      }
-
-      assertEquals(0, countRows(conn, "workouts"));
-    }
-  }
-
-  // - CRUD Tests: WORKOUT_ENTRIES -
-
-  /**
-   * Tests inserting a new workout entry into the workout_entries table.
-   */
-  @Test
-  void testCreateWorkoutEntry() throws SQLException {
-    try (Connection conn = getConnection()) {
-      int workoutId = getWorkoutIdByDate(conn, "2026-04-12");
-      int exerciseId = getExerciseIdByName(conn, "Push-Up");
-
-      String sql = """
-          INSERT INTO workout_entries
-          (workout_id, exercise_id, sets, reps, weight, duration_minutes, distance)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-          """;
-
-      try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, workoutId);
         ps.setInt(2, exerciseId);
-        ps.setInt(3, 4);
-        ps.setInt(4, 10);
-        ps.setDouble(5, 0.0);
-        ps.setNull(6, Types.REAL);
-        ps.setNull(7, Types.REAL);
         int rows = ps.executeUpdate();
         assertEquals(1, rows);
       }
 
-      assertEquals(4, countRows(conn, "workout_entries"));
+      assertEquals(startCount - 1, countRows(conn, "workouts"));
     }
   }
 
-  /**
-   * Tests reading a workout entry from the workout_entries table.
-   */
-  @Test
-  void testReadWorkoutEntry() throws SQLException {
-    try (Connection conn = DriverManager.getConnection(TEMP_DB)) {
-      // try the in memory database again for this test
-      Database db_temp = new Database(conn);
-      db_temp.initialize();
-      int exerciseId = getExerciseIdByName(conn, "Push-Up");
-
-      String sql = "SELECT * FROM workout_entries WHERE exercise_id = ? AND sets = ?";
-      try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, exerciseId);
-        ps.setInt(2, 3);
-        ResultSet rs = ps.executeQuery();
-
-        assertTrue(rs.next());
-        assertEquals(12, rs.getInt("reps"));
-      }
-    }
-  }
-
-  /**
-   * Tests updating a workout entry in the workout_entries table.
-   */
-  @Test
-  void testUpdateWorkoutEntry() throws SQLException {
-    try (Connection conn = getConnection()) {
-      int exerciseId = getExerciseIdByName(conn, "Push-Up");
-
-      String sql = "UPDATE workout_entries SET reps = ? WHERE exercise_id = ? AND sets = ?";
-      try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, 20);
-        ps.setInt(2, exerciseId);
-        ps.setInt(3, 3);
-        int rows = ps.executeUpdate();
-        assertEquals(1, rows);
-      }
-
-      try (PreparedStatement ps = conn.prepareStatement(
-          "SELECT reps FROM workout_entries WHERE exercise_id = ? AND sets = ?")) {
-        ps.setInt(1, exerciseId);
-        ps.setInt(2, 3);
-        ResultSet rs = ps.executeQuery();
-
-        assertTrue(rs.next());
-        assertEquals(20, rs.getInt("reps"));
-      }
-    }
-  }
-
-  /**
-   * Tests deleting a workout entry from the workout_entries table.
-   */
-  @Test
-  void testDeleteWorkoutEntry() throws SQLException {
-    try (Connection conn = getConnection()) {
-      int exerciseId = getExerciseIdByName(conn, "Push-Up");
-
-      String sql = "DELETE FROM workout_entries WHERE exercise_id = ? AND sets = ?";
-      try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, exerciseId);
-        ps.setInt(2, 3);
-        int rows = ps.executeUpdate();
-        assertEquals(1, rows);
-      }
-
-      assertEquals(2, countRows(conn, "workout_entries"));
-    }
-  }
-
-  // - Relationship Tests -
+  // ---------- Relationship Tests ----------
 
   /**
    * Verifies that deleting a user cascades and removes all related records due to foreign key
@@ -483,33 +399,11 @@ class DatabaseTest {
       assertEquals(0, countRows(conn, "users"));
       assertEquals(0, countRows(conn, "exercises"));
       assertEquals(0, countRows(conn, "workouts"));
-      assertEquals(0, countRows(conn, "workout_entries"));
     }
   }
 
   /**
-   * Verifies that deleting a workout removes dependent workout entries.
-   */
-  @Test
-  void testCascadeDeleteWorkout() throws SQLException {
-    try (Connection conn = getConnection()) {
-      int workoutId = getWorkoutIdByDate(conn, "2026-04-12");
-
-      try (PreparedStatement ps = conn.prepareStatement(
-          "DELETE FROM workouts WHERE workout_id = ?")) {
-        ps.setInt(1, workoutId);
-        ps.executeUpdate();
-      }
-
-      assertEquals(0, countRows(conn, "workouts"));
-      assertEquals(0, countRows(conn, "workout_entries"));
-      assertEquals(3, countRows(conn, "exercises"));
-      assertEquals(1, countRows(conn, "users"));
-    }
-  }
-
-  /**
-   * Verifies that deleting an exercise removes dependent workout entries.
+   * Verifies that deleting an exercise removes dependent workouts.
    */
   @Test
   void testCascadeDeleteExercise() throws SQLException {
@@ -523,11 +417,11 @@ class DatabaseTest {
       }
 
       assertEquals(2, countRows(conn, "exercises"));
-      assertEquals(2, countRows(conn, "workout_entries"));
+      assertEquals(2, countRows(conn, "workouts"));
     }
   }
 
-  // - Helper Methods-
+  // ---------- Helper Methods ----------
 
   /**
    * Creates a database connection and enables foreign key enforcement.
@@ -545,7 +439,7 @@ class DatabaseTest {
   /**
    * Checks whether a table exists in the database.
    *
-   * @param conn      active database connection
+   * @param conn active database connection
    * @param tableName name of the table to check
    * @return true if the table exists, false otherwise
    */
@@ -561,7 +455,7 @@ class DatabaseTest {
   /**
    * Counts the number of rows in a given table.
    *
-   * @param conn  active database connection
+   * @param conn active database connection
    * @param table table name
    * @return number of rows in the table
    */
@@ -575,7 +469,7 @@ class DatabaseTest {
   /**
    * Finds a user ID by username.
    *
-   * @param conn     active database connection
+   * @param conn active database connection
    * @param username username to search for
    * @return matching user_id
    */
@@ -603,23 +497,6 @@ class DatabaseTest {
       ResultSet rs = ps.executeQuery();
       assertTrue(rs.next(), "Expected exercise not found: " + name);
       return rs.getInt("exercise_id");
-    }
-  }
-
-  /**
-   * Finds a workout ID by date.
-   *
-   * @param conn        active database connection
-   * @param workoutDate date of the workout
-   * @return matching workout_id
-   */
-  private int getWorkoutIdByDate(Connection conn, String workoutDate) throws SQLException {
-    String sql = "SELECT workout_id FROM workouts WHERE workout_date = ?";
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setString(1, workoutDate);
-      ResultSet rs = ps.executeQuery();
-      assertTrue(rs.next(), "Expected workout not found for date: " + workoutDate);
-      return rs.getInt("workout_id");
     }
   }
 }

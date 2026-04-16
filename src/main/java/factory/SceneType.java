@@ -11,5 +11,6 @@ package factory;
 public enum SceneType {
     MAIN,
     LOGIN,
-    DATABASE
+    DATABASE,
+    VIEW_HISTORY
 }

@@ -1,8 +1,13 @@
 package db;
 
 import config.AppConfig;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * CSUMB CS ONLINE PROGRAM - Initializes and seeds a SQLite database for OtterFit fitness app.
@@ -29,6 +34,26 @@ public class Database {
   // Use a single connection for the entire class
   private final Connection connection;
 
+  public Database() throws SQLException {
+    this(DB_URL);
+  }
+
+  public Database(String dbUrl) throws SQLException {
+    try {
+      // Opens (or creates) app.db in the project root
+      connection = DriverManager.getConnection(dbUrl);
+      System.out.println("Database connected.");
+    } catch (SQLException e) {
+      System.err.println("Connection failed: " +
+          e.getMessage());
+      throw e;
+    }
+  }
+
+  public Database(Connection connection) {
+    this.connection = connection;
+  }
+
   /**
    * Entry point of the program. Initializes the database and prints status messages.
    */
@@ -45,45 +70,48 @@ public class Database {
     }
   }
 
-  public Database() throws SQLException {
-    this(DB_URL);
-  }
-
-  public Database(String dbUrl) throws SQLException {
-    try {
-      // Opens (or creates) app.db in the project root
-      connection = DriverManager.getConnection(dbUrl);
-      System.out.println("Database connected.");
-    } catch (SQLException e) {
-      System.err.println("Connection failed: " +
-              e.getMessage());
-      throw e;
+  /**
+   * Utility method to safely set Integer values.
+   */
+  private static void setIntegerOrNull(PreparedStatement ps, int index, Integer value)
+      throws SQLException {
+    if (value == null) {
+      ps.setNull(index, java.sql.Types.INTEGER);
+    } else {
+      ps.setInt(index, value);
     }
   }
 
-  public Database(Connection connection) {
-    this.connection = connection;
+  /**
+   * Utility method to safely set Double values.
+   */
+  private static void setDoubleOrNull(PreparedStatement ps, int index, Double value)
+      throws SQLException {
+    if (value == null) {
+      ps.setNull(index, java.sql.Types.REAL);
+    } else {
+      ps.setDouble(index, value);
+    }
   }
 
   /**
-   * Orchestrates database setup. Uses a transaction to ensure atomic
-   * setup (rollback on failure).
+   * Orchestrates database setup. Uses a transaction to ensure atomic setup (rollback on failure).
    *
    */
   public void initialize() throws SQLException {
     connection.setAutoCommit(false);
 
     try {
-        enableForeignKeys();
-        createTables();
-        createIndexes();
-        seedExampleData();
-        connection.commit();
-      } catch (SQLException e) {
-        connection.rollback();
-        throw e;
-      }
+      enableForeignKeys();
+      createTables();
+      createIndexes();
+      seedExampleData();
+      connection.commit();
+    } catch (SQLException e) {
+      connection.rollback();
+      throw e;
     }
+  }
 
   /**
    * Enables enforcement of foreign key constraints in SQLite.
@@ -165,6 +193,9 @@ public class Database {
       stmt.execute(createWorkoutEntries);
     }
   }
+  /***********************************************************
+   *                   USER                                  *
+   ***********************************************************/
 
   /**
    * Creates indexes to improve query performance on foreign keys.
@@ -225,17 +256,15 @@ public class Database {
     upsertWorkoutEntry(workoutId, squatId, 3, 15, 0.0, null, null);
     upsertWorkoutEntry(workoutId, runId, null, null, null, 20.0, 2.5);
   }
-  /***********************************************************
-   *                   USER                                  *
-   ***********************************************************/
+
   /**
    * Inserts a user if not already present.
    *
    * @return user_id of existing or newly created user
    */
   private int upsertUser(String username, String email,
-                                String passwordPlaintext)
-          throws SQLException {
+      String passwordPlaintext)
+      throws SQLException {
 
     Integer existingId = findUserIdByUsername(username);
     if (existingId != null) {
@@ -259,6 +288,9 @@ public class Database {
 
     throw new SQLException("Failed to insert or retrieve user.");
   }
+  /***********************************************************
+   *                   EXERCISE                              *
+   ***********************************************************/
 
   /**
    * Looks up a user's ID by username.
@@ -266,7 +298,7 @@ public class Database {
    * @return user_id or null if not found
    */
   private Integer findUserIdByUsername(String username)
-          throws SQLException {
+      throws SQLException {
     String sql = "SELECT user_id FROM users WHERE username = ?;";
 
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -298,16 +330,17 @@ public class Database {
     }
   }
   /***********************************************************
-   *                   EXERCISE                              *
+   *                   WORKOUT                               *
    ***********************************************************/
+
   /**
    * Inserts an exercise if it does not already exist for the user.
    *
    * @return exercise_id
    */
   private int upsertExercise(int userId, String name, String category,
-                                    String description)
-          throws SQLException {
+      String description)
+      throws SQLException {
 
     Integer existingId = findExerciseId(userId, name);
     if (existingId != null) {
@@ -337,7 +370,7 @@ public class Database {
    * Finds an exercise ID for a user by name.
    */
   private Integer findExerciseId(int userId, String name)
-          throws SQLException {
+      throws SQLException {
     String sql = "SELECT exercise_id FROM exercises WHERE user_id = ? AND name = ?;";
 
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -351,16 +384,14 @@ public class Database {
     }
     return null;
   }
-  /***********************************************************
-   *                   WORKOUT                               *
-   ***********************************************************/
+
   /**
    * Inserts a workout if it does not already exist.
    *
    * @return workout_id
    */
   private int upsertWorkout(int userId, String workoutDate, String notes)
-          throws SQLException {
+      throws SQLException {
 
     Integer existingId = findWorkoutId(userId, workoutDate, notes);
     if (existingId != null) {
@@ -389,8 +420,8 @@ public class Database {
    * Finds a workout by user, date, and notes.
    */
   private Integer findWorkoutId(int userId, String workoutDate,
-                                       String notes)
-          throws SQLException {
+      String notes)
+      throws SQLException {
 
     String sql = """
         SELECT workout_id FROM workouts
@@ -413,6 +444,9 @@ public class Database {
     }
     return null;
   }
+  /***********************************************************
+   *                   utilities                             *
+   ***********************************************************/
 
   /**
    * Inserts a workout entry if it does not already exist.
@@ -420,17 +454,17 @@ public class Database {
    * @return entry_id
    */
   private int upsertWorkoutEntry(
-          int workoutId,
-          int exerciseId,
-          Integer sets,
-          Integer reps,
-          Double weight,
-          Double durationMinutes,
-          Double distance
+      int workoutId,
+      int exerciseId,
+      Integer sets,
+      Integer reps,
+      Double weight,
+      Double durationMinutes,
+      Double distance
   ) throws SQLException {
 
     Integer existingId = findWorkoutEntryId(
-            workoutId, exerciseId, sets, reps, weight, durationMinutes, distance
+        workoutId, exerciseId, sets, reps, weight, durationMinutes, distance
     );
 
     if (existingId != null) {
@@ -468,13 +502,13 @@ public class Database {
    * Finds an existing workout entry with matching values.
    */
   private Integer findWorkoutEntryId(
-          int workoutId,
-          int exerciseId,
-          Integer sets,
-          Integer reps,
-          Double weight,
-          Double durationMinutes,
-          Double distance
+      int workoutId,
+      int exerciseId,
+      Integer sets,
+      Integer reps,
+      Double weight,
+      Double durationMinutes,
+      Double distance
   ) throws SQLException {
 
     String sql = """
@@ -511,32 +545,7 @@ public class Database {
     }
     return null;
   }
-  /***********************************************************
-   *                   utilities                             *
-   ***********************************************************/
-  /**
-   * Utility method to safely set Integer values.
-   */
-  private static void setIntegerOrNull(PreparedStatement ps, int index, Integer value)
-          throws SQLException {
-    if (value == null) {
-      ps.setNull(index, java.sql.Types.INTEGER);
-    } else {
-      ps.setInt(index, value);
-    }
-  }
 
-  /**
-   * Utility method to safely set Double values.
-   */
-  private static void setDoubleOrNull(PreparedStatement ps, int index, Double value)
-          throws SQLException {
-    if (value == null) {
-      ps.setNull(index, java.sql.Types.REAL);
-    } else {
-      ps.setDouble(index, value);
-    }
-  }
   /**
    * Utility method to dump all tables to a string for debug display
    */
@@ -549,7 +558,7 @@ public class Database {
       sb.append("=== ").append(table).append(" ===\n");
 
       try (Statement stmt = connection.createStatement();
-           ResultSet rs = stmt.executeQuery("SELECT * FROM " + table)) {
+          ResultSet rs = stmt.executeQuery("SELECT * FROM " + table)) {
 
         ResultSetMetaData meta = rs.getMetaData();
         int colCount = meta.getColumnCount();
@@ -576,5 +585,78 @@ public class Database {
     }
 
     return sb.toString();
+  }
+
+  /**
+   * getWorkoutHistory - used to display recent workouts logged by signed in user
+   */
+  public java.util.List<String> getWorkoutHistory(String username) throws SQLException {
+    java.util.List<String> historyList = new java.util.ArrayList<>();
+    String sql = """
+            SELECT w.workout_date,
+                   w.notes,
+                   e.name AS exercise_name,
+                   we.sets,
+                   we.reps,
+                   we.weight,
+                   we.duration_minutes,
+                   we.distance
+            FROM users u
+            JOIN workouts w ON u.user_id = w.user_id
+            JOIN workout_entries we ON w.workout_id = we.workout_id
+            JOIN exercises e ON we.exercise_id = e.exercise_id
+            WHERE u.username = ?
+            ORDER BY w.workout_date DESC, e.name
+        """;
+
+    try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+      preparedStatement.setString(1, username);
+      try (ResultSet resultSet = preparedStatement.executeQuery()) {
+        while (resultSet.next()) {
+          String workoutDate = resultSet.getString("workout_date");
+          String workoutNotes = resultSet.getString("notes");
+          String exerciseName = resultSet.getString("exercise_name");
+
+          Integer setCount = resultSet.getObject("sets") != null
+              ? resultSet.getInt("sets") : null;
+          Integer repCount = resultSet.getObject("reps") != null
+              ? resultSet.getInt("reps") : null;
+          Double weightValue = resultSet.getObject("weight") != null
+              ? resultSet.getDouble("weight") : null;
+          Double durationMinutes = resultSet.getObject("duration_minutes") != null
+              ? resultSet.getDouble("duration_minutes") : null;
+          Double distanceMiles = resultSet.getObject("distance") != null
+              ? resultSet.getDouble("distance") : null;
+
+          StringBuilder entryBuilder = new StringBuilder();
+          entryBuilder.append(workoutDate)
+              .append(" - ")
+              .append(exerciseName);
+
+          if (setCount != null && repCount != null) {
+            entryBuilder.append(" | ").append(setCount).append("x").append(repCount);
+          }
+          if (weightValue != null && weightValue > 0) {
+            entryBuilder.append(" @ ").append(weightValue).append(" lbs");
+          }
+          if (durationMinutes != null) {
+            entryBuilder.append(" | ").append(durationMinutes).append(" min");
+          }
+          if (distanceMiles != null) {
+            entryBuilder.append(" | ").append(distanceMiles).append(" mi");
+          }
+          if (workoutNotes != null && !workoutNotes.isBlank()) {
+            entryBuilder.append(" | ").append(workoutNotes);
+          }
+          historyList.add(entryBuilder.toString());
+        }
+      }
+    }
+
+    if (historyList.isEmpty()) {
+      historyList.add("No workout history found for " + username);
+    }
+
+    return historyList;
   }
 }

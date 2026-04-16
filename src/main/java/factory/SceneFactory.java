@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ui.login.LoginView;
 import ui.main.MainView;
+import ui.main.ViewHistory;
 import ui.utility.DatabaseView;
 
 /**
@@ -12,7 +13,7 @@ import ui.utility.DatabaseView;
  *
  * @author rcwav
  * @author Jose Acha-Camacho
- * @version : 0.2.0
+ * @version : 0.3.0
  * @since 3/28/2026
  */
 public abstract class SceneFactory {
@@ -22,9 +23,10 @@ public abstract class SceneFactory {
    */
   public static Scene create(SceneType type, Stage stage, Database db) {
     return switch (type) {
-      case MAIN -> MainView.createScene(stage, db, "Guest"); // fallback
+      case MAIN -> MainView.createScene(stage, db, "Guest");
       case LOGIN -> LoginView.createScene(stage, db);
       case DATABASE -> DatabaseView.createScene(stage, db, SceneType.MAIN);
+      case VIEW_HISTORY -> ViewHistory.createScene(stage, db, "Guest");
     };
   }
 
@@ -36,6 +38,7 @@ public abstract class SceneFactory {
       case MAIN -> MainView.createScene(stage, db, username);
       case LOGIN -> LoginView.createScene(stage, db);
       case DATABASE -> DatabaseView.createScene(stage, db, SceneType.MAIN);
+      case VIEW_HISTORY -> ViewHistory.createScene(stage, db, username);
     };
   }
 
@@ -45,7 +48,7 @@ public abstract class SceneFactory {
   public static Scene create(SceneType type, Stage stage, Database db, SceneType returnTo) {
     return switch (type) {
       case DATABASE -> DatabaseView.createScene(stage, db, returnTo);
-      default -> create(type, stage, db); // fallback to default
+      default -> create(type, stage, db);
     };
   }
 }

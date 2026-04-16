@@ -1,6 +1,8 @@
 package ui.main;
 
 import db.Database;
+import factory.SceneFactory;
+import factory.SceneType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -66,8 +68,10 @@ public class MainView {
     Button viewHistoryBtn = new Button("View History");
     viewHistoryBtn.setPrefSize(buttonWidth, buttonHeight);
     viewHistoryBtn.setStyle(buttonStyle);
-    viewHistoryBtn.setOnAction(e ->
-        System.out.println(username + " clicked View History"));
+    viewHistoryBtn.setOnAction(e -> {
+      System.out.println(username + " clicked View History");
+      stage.setScene(SceneFactory.create(SceneType.VIEW_HISTORY, stage, db, username));
+    });
 
     root.getChildren().addAll(
         welcomeLabel,

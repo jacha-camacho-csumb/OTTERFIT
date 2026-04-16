@@ -20,7 +20,7 @@ public class Main extends Application {
   public void start(Stage stage) {
     Label label = new Label("Hello JavaFX ");
 
-    stage.setTitle("My First App");
+    stage.setTitle("OtterFit");
 
     // Create DatabaseManager here, then pass to scene manager
     // so all scenes can use it, a single instance

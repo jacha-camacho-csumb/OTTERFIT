@@ -3,38 +3,49 @@ package factory;
 import db.Database;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import ui.login.LoginView;
+import ui.main.MainView;
 import ui.utility.DatabaseView;
 
 /**
- * SceneFactory
- * <p>
- * Description:
+ * SceneFactory Handles creation of all application scenes
  *
  * @author rcwav
+ * @author Jose Acha-Camacho
+ * @version : 0.2.0
  * @since 3/28/2026
  */
 public abstract class SceneFactory {
 
-    // Window dimensions in pixels
-    private static final int SCENE_WIDTH = 400;
-    private static final int SCENE_HEIGHT = 300;
+  /**
+   * Default scene creation (no username)
+   */
+  public static Scene create(SceneType type, Stage stage, Database db) {
+    return switch (type) {
+      case MAIN -> MainView.createScene(stage, db, "Guest"); // fallback
+      case LOGIN -> LoginView.createScene(stage, db);
+      case DATABASE -> DatabaseView.createScene(stage, db, SceneType.MAIN);
+    };
+  }
 
-    public static Scene create(SceneType type, Stage stage, Database db) {
-        return switch(type) {
-            case MAIN -> ui.main.MainView.createScene(stage, db);
-            case LOGIN -> ui.login.LoginView.createScene(stage, db);
-            case DATABASE -> ui.utility.DatabaseView.createScene(stage, db, SceneType.MAIN);
-        };
-    }
-    /*
-    Overload create with a method that includes a returnTo
-     */
-    public static Scene create(SceneType type, Stage stage, Database db, SceneType returnTo) {
-        switch(type) {
-            case DATABASE:
-                return DatabaseView.createScene(stage, db, returnTo);
-            default:
-                return create(type, stage, db);
-        }
-    }
+  /**
+   * Scene creation with username (used after login)
+   */
+  public static Scene create(SceneType type, Stage stage, Database db, String username) {
+    return switch (type) {
+      case MAIN -> MainView.createScene(stage, db, username);
+      case LOGIN -> LoginView.createScene(stage, db);
+      case DATABASE -> DatabaseView.createScene(stage, db, SceneType.MAIN);
+    };
+  }
+
+  /**
+   * Scene creation with return navigation (used by DatabaseView)
+   */
+  public static Scene create(SceneType type, Stage stage, Database db, SceneType returnTo) {
+    return switch (type) {
+      case DATABASE -> DatabaseView.createScene(stage, db, returnTo);
+      default -> create(type, stage, db); // fallback to default
+    };
+  }
 }

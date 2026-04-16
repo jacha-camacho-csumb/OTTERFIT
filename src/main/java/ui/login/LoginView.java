@@ -103,7 +103,7 @@ public class LoginView {
                     message.setText("Login successful!");
 
                     // 🚀 Switch to main scene
-                    stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db));
+                    stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db, username));
 
                 } else {
                     message.setTextFill(Color.RED);

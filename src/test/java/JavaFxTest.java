@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version 0.1.0
  * @since 4/13/2026
  * @version 0.2.0 : RC : Updated after changing the Login view
+ * @version 0.3.0 : JA : Updated after altering MainView
  */
 @ExtendWith(ApplicationExtension.class)
 public class JavaFxTest {
@@ -81,21 +82,18 @@ public class JavaFxTest {
 
     @Test
     void loginButtonLogsIn(FxRobot robot){
-        //Pause to show testing process
+        // Pause to show testing process
         robot.sleep(2000);
-        //Find and populate username and password
+        // Enter login credentials
         robot.clickOn("#" + LoginView.usernameField).write("otter");
         robot.clickOn("#" + LoginView.passwordField).write("otter");
-        //Find the login button and click the button to close
         Button loginButton = robot.lookup("#" + LoginView.loginButton).queryAs(Button.class);
         robot.clickOn(loginButton);
-        //Pause to show the testing process
         robot.sleep(2000);
-        //Main stage should now be open
         assertTrue(testStage.isShowing(), "Main stage should still be showing after login");
-        //Main screen label should still be visible
-        Label mainLabel = robot.lookup("Main Screen").queryAs(Label.class);
-        assertNotNull(mainLabel, "Main Screen label should still exist after popup closes");
-        assertTrue(mainLabel.isVisible(), "Main Screen label should be visible after popup closes");
+        // Check for welcome label
+        Label welcomeLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
+        assertNotNull(welcomeLabel, "Welcome label should exist after login");
+        assertTrue(welcomeLabel.isVisible(), "Welcome label should be visible after login");
     }
 }

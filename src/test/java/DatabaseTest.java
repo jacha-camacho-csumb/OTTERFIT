@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+
+import model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -176,6 +178,79 @@ class DatabaseTest {
   }
 
   /**
+   * Tests inserting a new user into the users table.
+   */
+  @Test
+  void testUpsertUser() throws SQLException {
+    try (Database db = getTempDatabase()) {
+      String username = "fred";
+      String email1 = "fflintstone@bedrock.com";
+      String password = "bambam";
+       /**
+       * create a user Fred
+       */
+      assertTrue(db.createUser(username, email1, password));
+      User fred = db.readUser(username);
+      assertEquals(username, fred.username);
+      assertEquals(email1, fred.email);
+      assertTrue(db.validateUser(username, password));
+    }
+  }
+  /**
+   * Tests changing a user email address
+   */
+  @Test
+  void testUpdateUserEmail() throws SQLException {
+    try (Database db = getTempDatabase()) {
+      String username = "fred";
+      String email1 = "fflintstone@bedrock.com";
+      String password = "bambam";
+      String email2 = "fflintstone2@bedrock.com";
+      /**
+       * create a user Fred
+       */
+      assertTrue(db.createUser(username, email1, password));
+      User fred = db.readUser(username);
+      assertEquals(email1, fred.email);
+
+      /**
+       * update Fred's email address
+       */
+      int user_id = fred.userId;
+      db.updateUserEmail(user_id, email2);
+      fred = db.readUser(username);
+      assertEquals(username, fred.username);
+      assertEquals(email2, fred.email);
+    }
+  }
+
+  /**
+   * Tests changing a user password
+   */
+  @Test
+  void testUpdateUserPassword() throws SQLException {
+    try (Database db = getTempDatabase()) {
+      String username = "fred";
+      String email1 = "fflintstone@bedrock.com";
+      String password1 = "bambam";
+      String password2 = "bambam2";
+      /**
+       * create a user Fred
+       */
+      assertTrue(db.createUser(username, email1, password1));
+      User fred = db.readUser(username);
+      assertTrue(db.validateUser(username, password1));
+
+      /**
+       * Update Fred's password
+       */
+      assertTrue(db.updateUserPassword(fred, password1, password2));
+      assertTrue(db.validateUser(username, password2));
+
+    }
+  }
+
+  /**
    * Tests deleting a user from the users table.
    */
   @Test
@@ -312,8 +387,40 @@ class DatabaseTest {
    */
   @Test
   void testReadWorkout() throws SQLException {
+    String exerciseName = "Push-Up";
+    String userName = "otter";
+    String workoutDate = "2026-04-13";
+    String notes = "Upper body workout.";
+    Double duration = 5.0;
+
+    db.initialize();
+
     try (Connection conn = getConnection()) {
+      /**
+       * And then reestablish the record that will be deleted
+       */
       String sql = """
+          INSERT INTO workouts (user_id, exercise_id, workout_date, notes, duration_minutes)
+          VALUES (?, ?, ?, ?, ?)
+          """;
+      int userId = getUserIdByUsername(conn, userName);
+      int exerciseId = getExerciseIdByName(conn, exerciseName);
+
+      try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, userId);
+        ps.setInt(2, exerciseId);
+        ps.setString(3, workoutDate);
+        ps.setString(4, notes);
+        ps.setNull(5, Types.REAL);
+        int rows = ps.executeUpdate();
+        assertEquals(1, rows);
+      }
+
+      /**
+       * Now we can test reading the row
+       */
+
+      sql = """
           SELECT w.*, e.name AS exercise_name
           FROM workouts w
           JOIN exercises e ON w.exercise_id = e.exercise_id
@@ -321,12 +428,12 @@ class DatabaseTest {
           """;
 
       try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setString(1, "2026-04-12");
-        ps.setString(2, "Push-Up");
+        ps.setString(1, workoutDate);
+        ps.setString(2, exerciseName);
         ResultSet rs = ps.executeQuery();
 
         assertTrue(rs.next());
-        assertEquals("Chest work", rs.getString("notes"));
+        assertEquals(notes, rs.getString("notes"));
       }
     }
   }
@@ -336,13 +443,26 @@ class DatabaseTest {
    */
   @Test
   void testUpdateWorkout() throws SQLException {
+    String exerciseName = "Push-Up";
+    String userName = "otter";
+    String workoutDate = "2026-04-13";
+    String notes = "Upper body workout.";
+    Double duration = 5.0;
+
+    db.initialize();
+
     try (Connection conn = getConnection()) {
-      int exerciseId = getExerciseIdByName(conn, "Push-Up");
+      int userId = getUserIdByUsername(conn, userName);
+      int exerciseId = getExerciseIdByName(conn, exerciseName);
+
+      /**
+       * Now we can test updating the row
+       */
 
       String sql = "UPDATE workouts SET notes = ? WHERE workout_date = ? AND exercise_id = ?";
       try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, "Updated workout notes.");
-        ps.setString(2, "2026-04-12");
+        ps.setString(2, workoutDate);
         ps.setInt(3, exerciseId);
         int rows = ps.executeUpdate();
         assertEquals(1, rows);
@@ -350,7 +470,7 @@ class DatabaseTest {
 
       try (PreparedStatement ps = conn.prepareStatement(
           "SELECT notes FROM workouts WHERE workout_date = ? AND exercise_id = ?")) {
-        ps.setString(1, "2026-04-12");
+        ps.setString(1, workoutDate);
         ps.setInt(2, exerciseId);
         ResultSet rs = ps.executeQuery();
 
@@ -365,13 +485,51 @@ class DatabaseTest {
    */
   @Test
   void testDeleteWorkout() throws SQLException {
-    try (Connection conn = getConnection()) {
-      int startCount = countRows(conn, "workouts");
-      int exerciseId = getExerciseIdByName(conn, "Push-Up");
+    /**
+     * Need to establish a deterministic state before testing
+     * The current state of the DB is unknown and order of tests
+     * is unknown. To be immutable each test must establish
+     * baseline context. One way to do that is make a new database
+     * and initialize() at the start of each test.
+     */
+    String exerciseName = "Push-Up";
+    String userName = "otter";
+    String workoutDate = "2026-04-13";
+    String notes = "Upper body workout.";
+    Double duration = 5.0;
 
-      String sql = "DELETE FROM workouts WHERE workout_date = ? AND exercise_id = ?";
+    db.initialize();
+
+    try (Connection conn = getConnection()) {
+      /**
+       * And then reestablish the record that will be deleted
+       */
+      String sql = """
+          INSERT INTO workouts (user_id, exercise_id, workout_date, notes, duration_minutes)
+          VALUES (?, ?, ?, ?, ?)
+          """;
+      int userId = getUserIdByUsername(conn, userName);
+      int exerciseId = getExerciseIdByName(conn, exerciseName);
+
       try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setString(1, "2026-04-12");
+        ps.setInt(1, userId);
+        ps.setInt(2, exerciseId);
+        ps.setString(3, workoutDate);
+        ps.setString(4, notes);
+        ps.setNull(5, Types.REAL);
+        int rows = ps.executeUpdate();
+        assertEquals(1, rows);
+      }
+
+      /**
+       * Now we can test deleting the row
+       */
+
+      int startCount = countRows(conn, "workouts");
+
+      sql = "DELETE FROM workouts WHERE workout_date = ? AND exercise_id = ?";
+      try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, workoutDate);
         ps.setInt(2, exerciseId);
         int rows = ps.executeUpdate();
         assertEquals(1, rows);
@@ -434,6 +592,26 @@ class DatabaseTest {
       stmt.execute("PRAGMA foreign_keys = ON;");
     }
     return conn;
+  }
+  /**
+   * Creates an in memory database connection and enables foreign key enforcement.
+   *  As a new-new database, also must run initialize to ensure records exist
+   *  Use case for this method is any database transaction test to ensure
+   *    baseline database as a starting point, keep all updates isolated, ensure
+   *    consistent expected results.
+   *
+   * @return active database connection
+   */
+  private Database getTempDatabase() throws SQLException {
+    Connection conn = DriverManager.getConnection(TEMP_DB);
+    try (Statement stmt = conn.createStatement()) {
+      stmt.execute("PRAGMA foreign_keys = ON;");
+    }
+
+    Database dbTemp = new Database(conn);
+    dbTemp.initialize();
+
+    return dbTemp;
   }
 
   /**

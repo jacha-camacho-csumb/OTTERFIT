@@ -17,10 +17,9 @@ import javafx.stage.Stage;
  *
  * @author rcwav
  * @author Jose Acha-Camacho
- * @version : 0.2.0
+ * @version : 0.3.0
  * @since 4/12/2026
  */
-
 public class MainView {
 
   public static Scene createScene(Stage stage, Database db, String username) {
@@ -34,9 +33,18 @@ public class MainView {
     Label welcomeLabel = new Label("Welcome, " + username);
     welcomeLabel.setFont(new Font("Arial", 26));
 
-    // Shared button style ( to match login theme?)
+    // Shared button style
     String buttonStyle = """
             -fx-background-color: #4A90E2;
+            -fx-text-fill: white;
+            -fx-font-size: 16px;
+            -fx-padding: 12;
+            -fx-background-radius: 8;
+        """;
+
+    // Alternate style for sign out
+    String signOutStyle = """
+            -fx-background-color: #d9534f;
             -fx-text-fill: white;
             -fx-font-size: 16px;
             -fx-padding: 12;
@@ -73,12 +81,21 @@ public class MainView {
       stage.setScene(SceneFactory.create(SceneType.VIEW_HISTORY, stage, db, username));
     });
 
+    Button signOutBtn = new Button("Sign Out");
+    signOutBtn.setPrefSize(buttonWidth, buttonHeight);
+    signOutBtn.setStyle(signOutStyle);
+    signOutBtn.setOnAction(e -> {
+      System.out.println(username + " signed out");
+      stage.setScene(SceneFactory.create(SceneType.LOGIN, stage, db, SceneType.MAIN));
+    });
+
     root.getChildren().addAll(
         welcomeLabel,
         logWorkoutBtn,
         viewExercisesBtn,
         addExerciseBtn,
-        viewHistoryBtn
+        viewHistoryBtn,
+        signOutBtn
     );
 
     return new Scene(root, 500, 700);

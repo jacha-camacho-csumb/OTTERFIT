@@ -78,6 +78,9 @@ public class LoginView {
             -fx-text-fill: #4A90E2;
             -fx-underline: true;
         """);
+        createAccount.setOnAction(e->{
+            stage.setScene(SceneFactory.create(SceneType.CREATE_USER,stage,db,SceneType.LOGIN));
+        });
 
         // Create a show database link for debugging
         Button showDatabase = new Button("(show database)");

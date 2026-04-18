@@ -3,6 +3,7 @@ package factory;
 import db.Database;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import ui.login.CreateUserView;
 import ui.login.LoginView;
 import ui.main.MainView;
 import ui.main.ViewHistory;
@@ -22,33 +23,35 @@ public abstract class SceneFactory {
    * Default scene creation (no username)
    */
   public static Scene create(SceneType type, Stage stage, Database db) {
-    return switch (type) {
-      case MAIN -> MainView.createScene(stage, db, "Guest");
-      case LOGIN -> LoginView.createScene(stage, db);
-      case DATABASE -> DatabaseView.createScene(stage, db, SceneType.MAIN);
-      case VIEW_HISTORY -> ViewHistory.createScene(stage, db, "Guest");
-    };
+    return create(type, stage, db, null, null);
   }
 
   /**
    * Scene creation with username (used after login)
    */
   public static Scene create(SceneType type, Stage stage, Database db, String username) {
-    return switch (type) {
-      case MAIN -> MainView.createScene(stage, db, username);
-      case LOGIN -> LoginView.createScene(stage, db);
-      case DATABASE -> DatabaseView.createScene(stage, db, SceneType.MAIN);
-      case VIEW_HISTORY -> ViewHistory.createScene(stage, db, username);
-    };
+    return create(type, stage, db, null, username);
   }
 
   /**
    * Scene creation with return navigation (used by DatabaseView)
    */
   public static Scene create(SceneType type, Stage stage, Database db, SceneType returnTo) {
+    return create(type, stage, db, returnTo,null);
+  }
+
+  /**
+   * One Scene creation to rule them all...
+   */
+  public static Scene create(SceneType type, Stage stage, Database db, SceneType returnTo, String username) {
+    String sceneUsername = username != null ? username : "Guest";
+    SceneType sceneReturnTo = returnTo != null ? returnTo : SceneType.MAIN;
     return switch (type) {
-      case DATABASE -> DatabaseView.createScene(stage, db, returnTo);
-      default -> create(type, stage, db);
+      case MAIN -> MainView.createScene(stage, db, sceneUsername);
+      case LOGIN -> LoginView.createScene(stage, db);
+      case DATABASE -> DatabaseView.createScene(stage, db, sceneReturnTo);
+      case VIEW_HISTORY -> ViewHistory.createScene(stage, db, sceneUsername);
+      case CREATE_USER -> CreateUserView.createScene(stage, db);
     };
   }
 }

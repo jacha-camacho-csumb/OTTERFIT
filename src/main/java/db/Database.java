@@ -1,6 +1,8 @@
 package db;
 
 import config.AppConfig;
+import model.User;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -20,7 +22,7 @@ import java.sql.Statement;
  */
 
 
-public class Database {
+public class Database implements AutoCloseable {
 
   /**
    * JDBC connection string for the SQLite database file
@@ -62,6 +64,14 @@ public class Database {
       System.err.println("db.Database setup failed. :-(");
       e.printStackTrace();
     }
+  }
+
+  /**
+   * A close() method to clsoe the connection
+   * when Database object is terminated
+   */
+  public void close() throws SQLException {
+    connection.close();
   }
 
   /**
@@ -149,10 +159,6 @@ public class Database {
     }
   }
 
-  /***********************************************************
-   *                   USER                                  *
-   ***********************************************************/
-
   /**
    * Creates indexes to improve query performance on foreign keys.
    */
@@ -183,7 +189,8 @@ public class Database {
    * Inserts example data into the database using upsert-style helpers.
    */
   private void seedExampleData() throws SQLException {
-    int userId = upsertUser("otter", "otter@csumb.edu", "otter");
+    User newUser = upsertUser("otter", "otter@csumb.edu", "otter");
+    int userId = newUser.userId;
 
     int pushupId = upsertExercise(userId, "Push-Up", "Strength",
         "A bodyweight chest, shoulder, and triceps exercise.");
@@ -204,30 +211,53 @@ public class Database {
         "Cardio session", 20.0);
   }
 
+  /***********************************************************
+   *                   USER                                  *
+   ***********************************************************/
   /**
    * Inserts a user if not already present.
    *
    * @return user_id of existing or newly created user
    */
-  private int upsertUser(String username, String email, String passwordPlaintext)
+  private User upsertUser(String username, String email, String passwordPlaintext)
       throws SQLException {
 
-    Integer existingId = findUserIdByUsername(username);
-    if (existingId != null) {
-      return existingId;
+    /*
+    * For an upsert, if the user exists, form an update statement
+    * And if the user does not exist then form an insert statement
+     */
+    User existingUser = findUserByUsername(username);
+    if (existingUser != null) {
+      String sql = """
+              UPDATE users SET
+                email = ?
+                , password_plaintext = ?
+              WHERE user_id = ?
+              """;
+
+      try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        ps.setString(1, email);
+        ps.setString(2, passwordPlaintext);
+        ps.setInt(3, existingUser.userId);
+
+        ps.executeUpdate();
+
+        return readUser(username);
+      }
     }
+    else {
+      String sql = "INSERT INTO users (username, email, password_plaintext) VALUES (?, ?, ?);";
 
-    String sql = "INSERT INTO users (username, email, password_plaintext) VALUES (?, ?, ?);";
+      try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        ps.setString(1, username);
+        ps.setString(2, email);
+        ps.setString(3, passwordPlaintext);
+        ps.executeUpdate();
 
-    try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-      ps.setString(1, username);
-      ps.setString(2, email);
-      ps.setString(3, passwordPlaintext);
-      ps.executeUpdate();
-
-      try (ResultSet rs = ps.getGeneratedKeys()) {
-        if (rs.next()) {
-          return rs.getInt(1);
+        try (ResultSet rs = ps.getGeneratedKeys()) {
+          if (rs.next()) {
+            return readUser(username);
+          }
         }
       }
     }
@@ -235,29 +265,118 @@ public class Database {
     throw new SQLException("Failed to insert or retrieve user.");
   }
 
+  /**
+   * Creates a new user if not already present, otherwise returns null
+   *
+   * @return true if successful, false if not
+   */
+  public boolean createUser(String username, String email, String passwordPlaintext)
+          throws SQLException {
+
+    /*
+     * Check existence of user by email and by username, if either exists
+     * then return false.
+     */
+    if (findUserByUsername(username) != null || findUserByEmail(email) != null) {
+      return false;
+    }
+
+    return (upsertUser(username, email, passwordPlaintext) != null);
+  }
+
+  /**
+   * Update the user email in the database
+   *
+   * @return boolean indicating sucess
+   */
+  public boolean updateUserEmail(int user_id, String newEmail) throws SQLException {
+    String sql = """
+            UPDATE users
+            SET email = ?
+            WHERE user_id = ?
+            """;
+
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+      ps.setString(1, newEmail);
+      ps.setInt(2, user_id);
+
+      return ps.executeUpdate() == 1;
+    }
+  }
+
+  /**
+   * Update the user password.
+   *
+   * @return true if successful
+   */
+  public boolean updateUserPassword(User user, String oldPassword, String newPassword) throws SQLException {
+    if (validateUser(user.username, oldPassword)) {
+      String sql = """
+          UPDATE users SET
+              password_plaintext = ?
+          WHERE user_id = ?
+            AND username = ?
+            AND password_plaintext = ?
+          """;
+
+      try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        ps.setString(1, newPassword);
+        ps.setInt(2, user.userId);
+        ps.setString(3, user.username);
+        ps.setString(4, oldPassword);
+        ps.executeUpdate();
+
+        return true;
+      }
+    }
+    else {
+      return false;
+    }
+  }
+
   /***********************************************************
    *                   EXERCISE                              *
    ***********************************************************/
 
   /**
-   * Looks up a user's ID by username.
+   * Looks up a user by username.
    *
-   * @return user_id or null if not found
+   * @return User or null if not found
    */
-  private Integer findUserIdByUsername(String username) throws SQLException {
-    String sql = "SELECT user_id FROM users WHERE username = ?;";
+  private User findUserByUsername(String username) throws SQLException {
+    return readUser(username);
+  }
+
+  /**
+   * Looks up a user by email.
+   *
+   * @return User or null if not found
+   */
+  private User findUserByEmail(String findEmail) throws SQLException {
+    String sql = """
+      SELECT user_id
+          , username
+          , email
+      FROM users
+      WHERE email = ?
+      """;
 
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
-      ps.setString(1, username);
+      ps.setString(1, findEmail);
+
       try (ResultSet rs = ps.executeQuery()) {
         if (rs.next()) {
-          return rs.getInt("user_id");
+          int userId = rs.getInt("user_id");
+          String name = rs.getString("username");
+          String email = rs.getString("email");
+
+          return new User(userId, name, email);
         }
       }
     }
+
     return null;
   }
-
   /**
    * Validates the username and password.
    *
@@ -274,6 +393,37 @@ public class Database {
         return rs.next();
       }
     }
+  }
+
+  /**
+   * Validates the username and password.
+   *
+   * @return true if credentials match, false otherwise
+   */
+  public User readUser(String username) throws SQLException {
+    String sql = """
+      SELECT user_id
+          , username
+          , email
+      FROM users
+      WHERE username = ?
+      """;
+
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+      ps.setString(1, username);
+
+      try (ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) {
+          int userId = rs.getInt("user_id");
+          String name = rs.getString("username");
+          String email = rs.getString("email");
+
+          return new User(userId, name, email);
+        }
+      }
+    }
+
+    return null;
   }
 
   /***********************************************************
@@ -364,6 +514,16 @@ public class Database {
     }
 
     throw new SQLException("Failed to insert or retrieve workout.");
+  }
+
+  /**
+   * Create a new workout (effectively a public method call to the private upsert
+   *
+   * @return workout_id
+   */
+  public int createWorkout(int userId, int exerciseId, String workoutDate, String notes,
+                           Double durationMinutes) throws SQLException {
+    return upsertWorkout(userId, exerciseId, workoutDate, notes, durationMinutes);
   }
 
   /**

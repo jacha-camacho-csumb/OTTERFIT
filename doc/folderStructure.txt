@@ -18,7 +18,6 @@ src/main/java/com/yourapp/
 │       └── DashboardView.java
 │
 ├── db/
-│   ├── db.Database.java
-│   ├── DatabaseManager.java
-│   └── dao/
-│       └── ItemDAO.java (Optional if DatabaseManager gets too big)
+│   └── db.Database.java
+├── model/
+│   └── model.User.java

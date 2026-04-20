@@ -12,5 +12,6 @@ public enum SceneType {
     MAIN,
     LOGIN,
     DATABASE,
-    VIEW_HISTORY
+    VIEW_HISTORY,
+    CREATE_USER
 }

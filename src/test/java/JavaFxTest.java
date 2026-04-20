@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -116,5 +117,51 @@ public class JavaFxTest {
         assertNotNull(robot.lookup("Add Exercise").queryAs(Button.class), "Add Exercise button should exist");
         assertNotNull(robot.lookup("View History").queryAs(Button.class), "View History button should exist");
         assertNotNull(robot.lookup("Sign Out").queryAs(Button.class), "Sign Out button should exist");
+    }
+
+    @Test
+    void signOutReturnToLogin(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Sign out
+        robot.clickOn("Sign Out");
+        robot.sleep(1000);
+        //Check for Login Scene after Sign Out
+        Label loginLabel = robot.lookup("#" + LoginView.loginTitle).queryAs(Label.class);
+        assertNotNull(loginLabel, "Login title should reappear after sign out");
+        assertTrue(loginLabel.isVisible());
+    }
+
+    @Test
+    void viewHistoryShowsWorkouts(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //View History button press
+        robot.clickOn("View History");
+        robot.sleep(1000);
+        //Check Title
+        Label title = robot.lookup("Workout History").queryAs(Label.class);
+        assertNotNull(title, "Workout History title label should exist");
+        assertTrue(title.isVisible());
+        //Check the list of workouts, three entries should be present for testing
+        ListView<?> list = robot.lookup(".list-view").queryAs(ListView.class);
+        assertNotNull(list, "History ListView should exist");
+        assertFalse(list.getItems().isEmpty(), "Workout history should have at least one entry");
+    }
+
+    @Test
+    void viewHistoryBackButtonCheck(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //View History button press
+        robot.clickOn("View History");
+        robot.sleep(1000);
+        //Back button click
+        robot.clickOn("Back");
+        robot.sleep(1000);
+        //Check to be back on MainView
+        Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
+        assertNotNull(mainLabel, "Should be back to MainView after clicking Back");
+        assertTrue(mainLabel.isVisible());
     }
 }

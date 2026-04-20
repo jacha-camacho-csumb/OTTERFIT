@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since 4/13/2026
  * @version 0.2.0 : RC : Updated after changing the Login view
  * @version 0.3.0 : JA : Updated after altering MainView
+ * @version 0.4.0 : CH : Updated for new MainView, ViewHistory scene, and CreateUserView email/cancel fields
  */
 @ExtendWith(ApplicationExtension.class)
 public class JavaFxTest {
@@ -78,6 +79,7 @@ public class JavaFxTest {
         Label message = robot.lookup("#" + LoginView.messageField).queryAs(Label.class);
         assertNotNull(message);
         assertTrue(message.isVisible());
+        assertFalse(message.getText().isBlank(), "Error message should not be blank on bad login");
     }
 
     @Test
@@ -95,5 +97,24 @@ public class JavaFxTest {
         Label welcomeLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
         assertNotNull(welcomeLabel, "Welcome label should exist after login");
         assertTrue(welcomeLabel.isVisible(), "Welcome label should be visible after login");
+    }
+
+    private void loginAsOtter(FxRobot robot){
+        robot.clickOn("#" + LoginView.usernameField).write("otter");
+        robot.clickOn("#" + LoginView.passwordField).write("otter");
+        robot.clickOn("#" + LoginView.loginButton);
+        robot.sleep(1000);
+    }
+
+    @Test
+    void mainViewButtonsExist(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //check buttons
+        assertNotNull(robot.lookup("Log Workout").queryAs(Button.class), "Log Workout button should exist");
+        assertNotNull(robot.lookup("View Exercises").queryAs(Button.class), "View Exercises button should exist");
+        assertNotNull(robot.lookup("Add Exercise").queryAs(Button.class), "Add Exercise button should exist");
+        assertNotNull(robot.lookup("View History").queryAs(Button.class), "View History button should exist");
+        assertNotNull(robot.lookup("Sign Out").queryAs(Button.class), "Sign Out button should exist");
     }
 }

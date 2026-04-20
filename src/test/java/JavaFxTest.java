@@ -8,12 +8,14 @@ import java.sql.SQLException;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
+import ui.login.CreateUserView;
 import ui.login.LoginView;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -67,7 +69,7 @@ public class JavaFxTest {
     @Test
     void loginButtonFails(FxRobot robot){
         //Pause to show testing process
-        robot.sleep(2000);
+        robot.sleep(1000);
         //Find and populate username and password
         robot.clickOn("#" + LoginView.usernameField).write("oops");
         robot.clickOn("#" + LoginView.passwordField).write("oops");
@@ -75,7 +77,7 @@ public class JavaFxTest {
         Button loginButton = robot.lookup("#" + LoginView.loginButton).queryAs(Button.class);
         robot.clickOn(loginButton);
         //Pause to show the testing process
-        robot.sleep(2000);
+        robot.sleep(1000);
         //Invalid login should show here
         Label message = robot.lookup("#" + LoginView.messageField).queryAs(Label.class);
         assertNotNull(message);
@@ -86,13 +88,13 @@ public class JavaFxTest {
     @Test
     void loginButtonLogsIn(FxRobot robot){
         // Pause to show testing process
-        robot.sleep(2000);
+        robot.sleep(1000);
         // Enter login credentials
         robot.clickOn("#" + LoginView.usernameField).write("otter");
         robot.clickOn("#" + LoginView.passwordField).write("otter");
         Button loginButton = robot.lookup("#" + LoginView.loginButton).queryAs(Button.class);
         robot.clickOn(loginButton);
-        robot.sleep(2000);
+        robot.sleep(1000);
         assertTrue(testStage.isShowing(), "Main stage should still be showing after login");
         // Check for welcome label
         Label welcomeLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
@@ -162,6 +164,63 @@ public class JavaFxTest {
         //Check to be back on MainView
         Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
         assertNotNull(mainLabel, "Should be back to MainView after clicking Back");
+        assertTrue(mainLabel.isVisible());
+    }
+
+    @Test
+    void createUserSceneEmail(FxRobot robot){
+        //Start clicking Create Account
+        robot.clickOn("Create Account");
+        robot.sleep(500);
+        //Checking Email Field
+        TextField emailField = robot.lookup("#" + CreateUserView.emailField).queryAs(TextField.class);
+        assertNotNull(emailField, "Email field should exist on CreateUser scene");
+        assertTrue(emailField.isVisible());
+    }
+
+    @Test
+    void createUserCancelReturns(FxRobot robot){
+        //Click on Create Account
+        robot.clickOn("Create Account");
+        robot.sleep(1000);
+        //Click on Cancel
+        robot.clickOn("Cancel");
+        robot.sleep(1000);
+        //Check for Login Scene
+        Label loginLabel = robot.lookup("#" + LoginView.loginTitle).queryAs(Label.class);
+        assertNotNull(loginLabel, "Cancel should return to the Login Scene");
+        assertTrue(loginLabel.isVisible());
+    }
+
+    @Test
+    void createUserInvalidInput(FxRobot robot){
+        //Click on Create Account
+        robot.clickOn("Create Account");
+        robot.sleep(1000);
+        //Fields Blank and try to save for the invalid input
+        robot.clickOn("Save");
+        robot.sleep(1000);
+        //Check for error message
+        Label message = robot.lookup("#" + CreateUserView.messageField).queryAs(Label.class);
+        assertNotNull(message);
+        assertFalse(message.getText().isBlank(), "Error message should appear for an invalid input");
+    }
+
+    @Test
+    void createUserSuccess(FxRobot robot){
+        //Click on Create Account
+        robot.clickOn("Create Account");
+        robot.sleep(500);
+        //Input new test user
+        robot.clickOn("#" + CreateUserView.usernameField).write("newUser");
+        robot.clickOn("#" + CreateUserView.emailField).write("newUser@test.com");
+        robot.clickOn("#" + CreateUserView.passwordField).write("password123");
+        //Click on save
+        robot.clickOn("Save");
+        robot.sleep(2000);
+        //Check for MainView after Login
+        Label mainLabel = robot.lookup("Welcome, newUser").queryAs(Label.class);
+        assertNotNull(mainLabel, "MainView should be showing after successful Login");
         assertTrue(mainLabel.isVisible());
     }
 }

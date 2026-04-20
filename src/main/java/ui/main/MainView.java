@@ -66,8 +66,10 @@ public class MainView {
     Button viewExercisesBtn = new Button("View Exercises");
     viewExercisesBtn.setPrefSize(buttonWidth, buttonHeight);
     viewExercisesBtn.setStyle(buttonStyle);
-    viewExercisesBtn.setOnAction(e ->
-        System.out.println(username + " clicked View Exercises"));
+    viewExercisesBtn.setOnAction(e ->{
+        System.out.println(username + " clicked View Exercises");
+        stage.setScene(SceneFactory.create(SceneType.VIEW_EXERCISES, stage, db, username));
+    });
 
     Button addExerciseBtn = new Button("Add Exercise");
     addExerciseBtn.setPrefSize(buttonWidth, buttonHeight);

@@ -14,5 +14,6 @@ public enum SceneType {
     DATABASE,
     VIEW_HISTORY,
     CREATE_USER,
-    VIEW_EXERCISES
+    VIEW_EXERCISES,
+    ADD_EXERCISE
 }

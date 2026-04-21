@@ -462,6 +462,28 @@ public class Database implements AutoCloseable {
     throw new SQLException("Failed to insert or retrieve exercise: " + name);
   }
 
+  public boolean addExercise(String username, String name, String category, String description)
+    throws SQLException{
+
+    User user = readUser(username);
+    if (user == null) throw new SQLException("User not found: " + username);
+
+    //Check for duplicate name
+    if (findExerciseId(user.userId, name) != null) {
+      return false;
+    }
+
+    String sql = "INSERT INTO exercises (user_id, name, category, description) VALUES (?, ?, ?, ?);";
+    try (PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+      preparedStatement.setInt(1, user.userId);
+      preparedStatement.setString(2, name);
+      preparedStatement.setString(3, category.isBlank() ? null : category);
+      preparedStatement.setString(4, description.isBlank() ? null : description);
+      preparedStatement.executeUpdate();
+    }
+    return true;
+  }
+
   /**
    * Finds an exercise ID for a user by name.
    */

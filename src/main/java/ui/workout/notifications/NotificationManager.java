@@ -35,18 +35,61 @@ public class NotificationManager {
             }
         }
     }
-    public static synchronized  NotificationManager getInstance() {
+
+    /**
+     * Return the single instance of the NotificationManager
+     */
+    public static synchronized NotificationManager getInstance() {
         if (instance == null) {
             instance = new NotificationManager();
-
-            return instance;
         }
-        public void showDesktopNotification(String title, String messsage) {
+        return instance;
+    }
+        /**
+         * Displays a system tray notification or falls back to an alert if not supported
+         */
+        public void showDesktopNotification(String title, String message) {
             if (traySupported && trayIcon != null) {
-                Platform.runLater(()) -> trayIcon.displayMessage(title, message, MessageType.INFO);
+                Platform.runLater(() -> trayIcon.displayMessage(title, message, MessageType.INFO);
             } else {
                 showInfoAlert(title, message);
             }
+        }
+        /**
+         * Displays an error alert dialog to the user.
+         */
+        public void showErrorAlert(String title, String content) {
+            Platform.runLater(() -> {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle(title);
+                alert.setHeaderText(null);
+                alert.setContentText(content);
+                alert.showAndWait();
+            });
+        }
+        /**
+         * Warning alert dialog to the user.
+         */
+        public void showWarningAlert(String title, String content){
+            Platform.runLater(() -> {
+                Alert alert = new Alert(AlertType.WARNING);
+                alert.setTitle(title);
+                alert.setHeaderText(null);
+                alert.setContentText(content);
+                alert.showAndWait();
+                    });
+        }
+        /**
+         * Informational alert dialog to the user.
+         */
+        public void showInfoAlert(String title, String content){
+            Platform.runLater(() -> {
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle(title);
+                alert.setHeaderText(null);
+                alert.setContentText(content);
+                alert.showAndWait();
+            });
         }
     }
 }

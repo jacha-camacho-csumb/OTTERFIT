@@ -658,26 +658,22 @@ public class Database implements AutoCloseable {
   }
 
   /**
-   * Returns all exercises available to a user (Theirs and the seeded defaults).
+   * Returns all exercises available.
    */
-  public java.util.List<String> getExercises(String username) throws SQLException{
+  public java.util.List<String> getExercises(String username) throws SQLException {
     java.util.List<String> exerciseList = new java.util.ArrayList<>();
 
     String sql = """
-            SELECT e.name, 
-                   e.category,
-                   e.description
-            FROM users u
-            JOIN exercises e ON u.user_id = e.user_id
-            WHERE u.username = ?
-            ORDER BY e.category, e.name
-            """;
+          SELECT e.name, 
+                 e.category,
+                 e.description
+          FROM exercises e
+          ORDER BY e.category, e.name
+          """;
 
-    try (PreparedStatement prepared = connection.prepareStatement(sql)){
-      prepared.setString(1, username);
-
-      try (ResultSet result = prepared.executeQuery()){
-        while (result.next()){
+    try (PreparedStatement prepared = connection.prepareStatement(sql)) {
+      try (ResultSet result = prepared.executeQuery()) {
+        while (result.next()) {
           String exerciseName = result.getString("name");
           String exerciseCategory = result.getString("category");
           String exerciseDescription = result.getString("description");
@@ -685,11 +681,11 @@ public class Database implements AutoCloseable {
           StringBuilder entry = new StringBuilder();
           entry.append(exerciseName);
 
-          if (exerciseCategory != null && !exerciseCategory.isBlank()){
+          if (exerciseCategory != null && !exerciseCategory.isBlank()) {
             entry.append(" | ").append(exerciseCategory);
           }
 
-          if (exerciseDescription != null && !exerciseDescription.isBlank()){
+          if (exerciseDescription != null && !exerciseDescription.isBlank()) {
             entry.append(" - ").append(exerciseDescription);
           }
 
@@ -698,8 +694,8 @@ public class Database implements AutoCloseable {
       }
     }
 
-    if (exerciseList.isEmpty()){
-      exerciseList.add("No exercises found for" + username);
+    if (exerciseList.isEmpty()) {
+      exerciseList.add("No exercises found");
     }
 
     return exerciseList;

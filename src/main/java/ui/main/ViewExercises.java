@@ -21,6 +21,13 @@ import javafx.stage.Stage;
  */
 public class ViewExercises {
 
+    /**
+     * Creates and return the ViewExercises Scene
+     * @param stage Used to swap scenes after back button
+     * @param db the database used to get the exercise data
+     * @param username Currently logged-in user
+     * @return return's the fully constructed ViewExercises Scene
+     */
     public static Scene createScene(Stage stage, Database db, String username){
 
         VBox root = new VBox(15);
@@ -45,6 +52,7 @@ public class ViewExercises {
             e.printStackTrace();
         }
 
+        //Back Button
         Button backButton = new Button("Back");
         backButton.setStyle("""
             -fx-background-color: #4A90E2;

@@ -16,7 +16,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
- * [Brief one sentence description of what this class does.]
+ * This class is for adding an exercise to the database for anyone to be able to access.
  *
  * @author Christian Hoefer
  * @version 0.1.0
@@ -29,6 +29,13 @@ public class AddExercise {
     public static final String descriptionArea = "descriptionArea";
     public static final String messageField = "messageField";
 
+    /**
+     * Builds and returns the "Add Exercise" scene
+     * @param stage Used to swap scenes after save and cancel
+     * @param db the database for making the new exercise persist
+     * @param username Currently logged-in user, stores creator of exercise
+     * @return Fully constructed AddExercise Scene
+     */
     public static Scene createScene(Stage stage, Database db, String username){
 
         VBox root = new VBox(15);
@@ -60,6 +67,7 @@ public class AddExercise {
         descriptionArea.setWrapText(true);
         descriptionArea.setId(AddExercise.descriptionArea);
 
+        //Feedback message for errors
         Label message = new Label();
         message.setId(AddExercise.messageField);
 
@@ -77,6 +85,7 @@ public class AddExercise {
             String category = categoryField.getText().trim();
             String description = descriptionArea.getText().trim();
 
+            //Required field to proceed
             if(name.isEmpty()){
                 message.setTextFill(Color.RED);
                 message.setText("Exercise name is required.");
@@ -87,9 +96,11 @@ public class AddExercise {
                 boolean created = db.addExercise(username, name, category, description);
 
                 if (created) {
+                    //goes to MainView if successful
                     stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db, username));
                 }
                 else {
+                    //non-successful
                     message.setTextFill(Color.RED);
                     message.setText("An exercise with that name already exists.");
                 }
@@ -113,6 +124,7 @@ public class AddExercise {
         cancelButton.setOnAction(e ->
             stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db, username)));
 
+        //Layout for the row that contains the buttons
         javafx.scene.layout.HBox buttonRow = new javafx.scene.layout.HBox(15);
         buttonRow.setAlignment(Pos.CENTER);
         buttonRow.getChildren().addAll(saveButton, cancelButton);

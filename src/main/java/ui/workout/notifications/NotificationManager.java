@@ -50,7 +50,7 @@ public class NotificationManager {
          */
         public void showDesktopNotification(String title, String message) {
             if (traySupported && trayIcon != null) {
-                Platform.runLater(() -> trayIcon.displayMessage(title, message, MessageType.INFO);
+                Platform.runLater(() -> trayIcon.displayMessage(title, message, MessageType.INFO));
             } else {
                 showInfoAlert(title, message);
             }
@@ -91,5 +91,4 @@ public class NotificationManager {
                 alert.showAndWait();
             });
         }
-    }
 }

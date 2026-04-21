@@ -41,5 +41,12 @@ public class NotificationManager {
 
             return instance;
         }
+        public void showDesktopNotification(String title, String messsage) {
+            if (traySupported && trayIcon != null) {
+                Platform.runLater(()) -> trayIcon.displayMessage(title, message, MessageType.INFO);
+            } else {
+                showInfoAlert(title, message);
+            }
+        }
     }
 }

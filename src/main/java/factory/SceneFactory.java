@@ -6,6 +6,7 @@ import javafx.stage.Stage;
 import ui.login.CreateUserView;
 import ui.login.LoginView;
 import ui.main.MainView;
+import ui.main.ViewExercises;
 import ui.main.ViewHistory;
 import ui.utility.DatabaseView;
 
@@ -52,6 +53,7 @@ public abstract class SceneFactory {
       case DATABASE -> DatabaseView.createScene(stage, db, sceneReturnTo);
       case VIEW_HISTORY -> ViewHistory.createScene(stage, db, sceneUsername);
       case CREATE_USER -> CreateUserView.createScene(stage, db);
+      case VIEW_EXERCISES -> ViewExercises.createScene(stage, db, sceneUsername);
     };
   }
 }

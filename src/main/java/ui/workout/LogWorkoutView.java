@@ -76,6 +76,46 @@ public class LogWorkoutView {
             NotificationManager.getInstance().showErrorAlert("Database" , "Could not load exercises.");
         }
 
+        // save workout action
+        saveBtn.setOnAction(e -> {
+            Exercise selected = exerciseSelector.getSelectedExercise();
+            if (selected == null) {
+                NotificationManager.getInstance().showWarningAlert("Missing", "Please select an exercise.");
+                return;
+            }
+            if (datePicker.getValue() == null) {
+                NotificationManager.getInstance().showWarningAlert("Missing", "Please select a workout date.");
+                return;
+            }
+            double dur;
+            try {
+                dur = Double.parseDouble(durationField.getText());
+            } catch (NumberFormatException ex) {
+                NotificationManager.getInstance().showWarningAlert("Invalid", "Duration must be a number.");
+                return;
+            }
+            try {
+                db.createWorkout(
+                        userId,
+                        selected.getId(),
+                        datePicker.getValue().toString(),
+                        notes.get(),
+                        dur
+                );
+                NotificationManager.getInstance().showDesktopNotification(
+                        "Workout Logged",
+                        String.format("%s - %s, %.0f min",
+                                datePicker.getValue(), selected.getName(), dur)
+                );
+                // clear form
+                exerciseSelector.clearSelection();
+                datePicker.setValue(null);
+                durationField.clear();
+                notesArea.clear();
+            } catch (SQLException ex) {
+                NotificationManager.getInstance().showErrorAlert("Save Failed", ex.getMessage());
+            }
+        });
 
     }
 }

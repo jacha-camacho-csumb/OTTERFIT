@@ -69,8 +69,6 @@ public class JavaFxTest {
 
     @Test
     void loginButtonFails(FxRobot robot){
-        //Pause to show testing process
-        robot.sleep(1000);
         //Find and populate username and password
         robot.clickOn("#" + LoginView.usernameField).write("oops");
         robot.clickOn("#" + LoginView.passwordField).write("oops");
@@ -78,7 +76,7 @@ public class JavaFxTest {
         Button loginButton = robot.lookup("#" + LoginView.loginButton).queryAs(Button.class);
         robot.clickOn(loginButton);
         //Pause to show the testing process
-        robot.sleep(1000);
+        robot.sleep(400);
         //Invalid login should show here
         Label message = robot.lookup("#" + LoginView.messageField).queryAs(Label.class);
         assertNotNull(message);
@@ -88,14 +86,12 @@ public class JavaFxTest {
 
     @Test
     void loginButtonLogsIn(FxRobot robot){
-        // Pause to show testing process
-        robot.sleep(1000);
         // Enter login credentials
         robot.clickOn("#" + LoginView.usernameField).write("otter");
         robot.clickOn("#" + LoginView.passwordField).write("otter");
         Button loginButton = robot.lookup("#" + LoginView.loginButton).queryAs(Button.class);
         robot.clickOn(loginButton);
-        robot.sleep(1000);
+        robot.sleep(400);
         assertTrue(testStage.isShowing(), "Main stage should still be showing after login");
         // Check for welcome label
         Label welcomeLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
@@ -107,7 +103,7 @@ public class JavaFxTest {
         robot.clickOn("#" + LoginView.usernameField).write("otter");
         robot.clickOn("#" + LoginView.passwordField).write("otter");
         robot.clickOn("#" + LoginView.loginButton);
-        robot.sleep(1000);
+        robot.sleep(400);
     }
 
     @Test
@@ -128,7 +124,7 @@ public class JavaFxTest {
         loginAsOtter(robot);
         //Sign out
         robot.clickOn("Sign Out");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Check for Login Scene after Sign Out
         Label loginLabel = robot.lookup("#" + LoginView.loginTitle).queryAs(Label.class);
         assertNotNull(loginLabel, "Login title should reappear after sign out");
@@ -141,7 +137,7 @@ public class JavaFxTest {
         loginAsOtter(robot);
         //View History button press
         robot.clickOn("View History");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Check Title
         Label title = robot.lookup("Workout History").queryAs(Label.class);
         assertNotNull(title, "Workout History title label should exist");
@@ -158,10 +154,10 @@ public class JavaFxTest {
         loginAsOtter(robot);
         //View History button press
         robot.clickOn("View History");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Back button click
         robot.clickOn("Back");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Check to be back on MainView
         Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
         assertNotNull(mainLabel, "Should be back to MainView after clicking Back");
@@ -172,7 +168,7 @@ public class JavaFxTest {
     void createUserSceneEmail(FxRobot robot){
         //Start clicking Create Account
         robot.clickOn("Create Account");
-        robot.sleep(500);
+        robot.sleep(400);
         //Checking Email Field
         TextField emailField = robot.lookup("#" + CreateUserView.emailField).queryAs(TextField.class);
         assertNotNull(emailField, "Email field should exist on CreateUser scene");
@@ -183,10 +179,10 @@ public class JavaFxTest {
     void createUserCancelReturns(FxRobot robot){
         //Click on Create Account
         robot.clickOn("Create Account");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Click on Cancel
         robot.clickOn("Cancel");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Check for Login Scene
         Label loginLabel = robot.lookup("#" + LoginView.loginTitle).queryAs(Label.class);
         assertNotNull(loginLabel, "Cancel should return to the Login Scene");
@@ -197,10 +193,10 @@ public class JavaFxTest {
     void createUserInvalidInput(FxRobot robot){
         //Click on Create Account
         robot.clickOn("Create Account");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Fields Blank and try to save for the invalid input
         robot.clickOn("Save");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Check for error message
         Label message = robot.lookup("#" + CreateUserView.messageField).queryAs(Label.class);
         assertNotNull(message);
@@ -211,7 +207,7 @@ public class JavaFxTest {
     void createUserSuccess(FxRobot robot){
         //Click on Create Account
         robot.clickOn("Create Account");
-        robot.sleep(500);
+        robot.sleep(400);
         //Input new test user
         robot.clickOn("#" + CreateUserView.usernameField).write("newUser");
         robot.clickOn("#" + CreateUserView.emailField).write("newUser@test.com");
@@ -231,7 +227,7 @@ public class JavaFxTest {
         loginAsOtter(robot);
         //Click View Exercises button
         robot.clickOn("View Exercises");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Check for Title after Scene change
         Label title = robot.lookup("Exercises").queryAs(Label.class);
         assertNotNull(title, "Exercises title label should exist");
@@ -244,7 +240,7 @@ public class JavaFxTest {
         loginAsOtter(robot);
         //Click on View Exercises button
         robot.clickOn("View Exercises");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Check the list exists and has the test data
         ListView<?> list = robot.lookup(".list-view").queryAs(ListView.class);
         assertNotNull(list, "Exercise ListView should exist");
@@ -257,10 +253,10 @@ public class JavaFxTest {
         loginAsOtter(robot);
         //Click on View Exercises button
         robot.clickOn("View Exercises");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Click on Back button
         robot.clickOn("Back");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Should be back on MainView
         Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
         assertNotNull(mainLabel, "Should return to MainView after clicking Back button in ViewExercises");
@@ -273,7 +269,7 @@ public class JavaFxTest {
         loginAsOtter(robot);
         //Click on Add Exercise
         robot.clickOn("Add Exercise");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Check for Title after Scene change
         Label title = robot.lookup("Add Exercise").queryAs(Label.class);
         assertNotNull(title, "Add Exercise title label should exist");
@@ -286,7 +282,7 @@ public class JavaFxTest {
         loginAsOtter(robot);
         //Click on Add Exercise
         robot.clickOn("Add Exercise");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Check that name, category, and description fields show on screen
         TextField nameField = robot.lookup("#" + AddExercise.nameField).queryAs(TextField.class);
         assertNotNull(nameField, "Exercise name field should exist");
@@ -305,13 +301,65 @@ public class JavaFxTest {
         loginAsOtter(robot);
         //Click on Add Exercise
         robot.clickOn("Add Exercise");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Click on cancel button
         robot.clickOn("Cancel");
-        robot.sleep(1000);
+        robot.sleep(400);
         //Should be back on MainView
         Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
         assertNotNull(mainLabel, "Should return to MainView after clicking Cancel button in AddExercise");
         assertTrue(mainLabel.isVisible());
+    }
+
+    @Test
+    void addExerciseRequiresName(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Add Exercise
+        robot.clickOn("Add Exercise");
+        robot.sleep(400);
+        //Click on Save without anything placed in name
+        robot.clickOn("Save");
+        robot.sleep(400);
+        //Error should happen and show
+        Label error = robot.lookup("#" + AddExercise.messageField).queryAs(Label.class);
+        assertNotNull(error, "Error should appear");
+        assertFalse(error.getText().isBlank(), "Error should appear when name is blank");
+    }
+
+    @Test
+    void addExerciseDuplicate(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Add Exercise
+        robot.clickOn("Add Exercise");
+        robot.sleep(400);
+        //Try an already used name for an exercise
+        robot.clickOn("#" + AddExercise.nameField).write("Push-Up");
+        robot.clickOn("Save");
+        robot.sleep(400);
+        //Error for duplicate should appear
+        Label message = robot.lookup("#" + AddExercise.messageField).queryAs(Label.class);
+        assertNotNull(message, "Error message should exist");
+        assertFalse(message.getText().isBlank(), "Error message should appear for the duplicate");
+    }
+
+    @Test
+    void addExerciseSuccess(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Add Exercise
+        robot.clickOn("Add Exercise");
+        robot.sleep(400);
+        //Fill in New Exercise
+        robot.clickOn("#" + AddExercise.nameField).write("Plank");
+        robot.clickOn("#" + AddExercise.categoryField).write("Core");
+        robot.clickOn("#" + AddExercise.descriptionArea).write("Hold a horizontal body position");
+        //Click on Save
+        robot.clickOn("Save");
+        robot.sleep(400);
+        //Should be back on MainView after saving new exercise
+        Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
+        assertNotNull(mainLabel, "Should return to MainView after clicking Save button in AddExercise");
     }
 }

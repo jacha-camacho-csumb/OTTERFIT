@@ -45,4 +45,16 @@ public class ExerciseSelector extends VBox {
         });
         this.getChildren().addAll(label, comboBox);
     }
+    // updates the list of exercises in the dropdown
+    public void setExercises(ObservableList<Exercise> list) {
+        exercises.setAll(list);
+    }
+    // returns the currently selected exercise
+    public Exercise getSelectedExercise() {
+        return comboBox.getValue();
+    }
+    // clears the selected exercise
+    public void clearSelection(){
+        comboBox.setValue(null);
+    }
 }

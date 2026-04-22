@@ -8,6 +8,9 @@ import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import ui.workout.components.ExerciseSelector;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextField
+import javafx.scene.control.TextArea;
 
 /**
  * Log Workout scene.
@@ -31,5 +34,14 @@ public class LogWorkoutView {
 
         // Custom component used
         ExerciseSelector exerciseSelector = new ExerciseSelector();
+
+        // Form fields with data binding
+        DatePicker datePicker = new DatePicker();
+        datePicker.SetPromptText("Workout Date");
+        TextField durationField = new TextField();
+        durationField.setPromptText("Duration (minutes)");
+        TextField notesField = new TextField();
+        notesField.setPromptText("Notes (optional)");
+        notesArea.setPrefHeight(80);
     }
 }

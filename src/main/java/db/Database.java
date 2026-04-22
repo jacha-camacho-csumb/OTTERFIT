@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * CSUMB CS ONLINE PROGRAM -  * Creates otterfit_app.db, defines schema (users, exercises,
@@ -580,6 +582,10 @@ public class Database implements AutoCloseable {
     }
     return null;
   }
+
+  /***********************************************************
+   *        NEW METHODS FOR LOG/DELETE WORKOUT                *
+   ***********************************************************/
 
   /***********************************************************
    *                   utilities                             *

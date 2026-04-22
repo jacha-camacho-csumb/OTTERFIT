@@ -17,6 +17,7 @@ import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 import ui.login.CreateUserView;
 import ui.login.LoginView;
+import ui.main.ViewExercises;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version 0.2.0 : RC : Updated after changing the Login view
  * @version 0.3.0 : JA : Updated after altering MainView
  * @version 0.4.0 : CH : Updated for new MainView, ViewHistory scene, and CreateUserView email/cancel fields
+ * @version 0.5.0 : CH : Updated for adding ViewExercises and AddExercise
  */
 @ExtendWith(ApplicationExtension.class)
 public class JavaFxTest {
@@ -221,6 +223,48 @@ public class JavaFxTest {
         //Check for MainView after Login
         Label mainLabel = robot.lookup("Welcome, newUser").queryAs(Label.class);
         assertNotNull(mainLabel, "MainView should be showing after successful Login");
+        assertTrue(mainLabel.isVisible());
+    }
+
+    @Test
+    void viewExercisesOpens(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click View Exercises button
+        robot.clickOn("View Exercises");
+        robot.sleep(1000);
+        //Check for Title after Scene change
+        Label title = robot.lookup("Exercises").queryAs(Label.class);
+        assertNotNull(title, "Exercises title label should exist");
+        assertTrue(title.isVisible(), "Exercises title should be visible");
+    }
+
+    @Test
+    void viewExercisesListShows(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on View Exercises button
+        robot.clickOn("View Exercises");
+        robot.sleep(1000);
+        //Check the list exists and has the test data
+        ListView<?> list = robot.lookup(".list-view").queryAs(ListView.class);
+        assertNotNull(list, "Exercise ListView should exist");
+        assertFalse(list.getItems().isEmpty(), "Exercise list should contain at least one entry from test data");
+    }
+
+    @Test
+    void viewExercisesBackButton(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on View Exercises button
+        robot.clickOn("View Exercises");
+        robot.sleep(1000);
+        //Click on Back button
+        robot.clickOn("Back");
+        robot.sleep(1000);
+        //Should be back on MainView
+        Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
+        assertNotNull(mainLabel, "Should return to MainView after clicking Back button in ViewExercises");
         assertTrue(mainLabel.isVisible());
     }
 }

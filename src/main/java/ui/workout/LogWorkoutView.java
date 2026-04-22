@@ -1,7 +1,12 @@
 package ui.workout;
 
+import db.Database;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.scene.layout.VBox;
+import javafx.geometry.Pos;
+import javafx.geometry.Insets;
+import javafx.scene.control.Label;
 
 /**
  * Log Workout scene.
@@ -13,6 +18,15 @@ import javafx.stage.Stage;
  * @since 4/21/2026
  */
 
-
 public class LogWorkoutView {
+    public static Scene createScene(Stage stage, Database db, int userId, String username) {
+        VBox root = new VBox(15);
+        root.setAlignment(Pos.CENTER);
+        root.setPadding(new Insets(40));
+        root.setStyle("-fx-background-color: #f2f2f2;");
+
+        Label title = new Label("Log Workout");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+
+    }
 }

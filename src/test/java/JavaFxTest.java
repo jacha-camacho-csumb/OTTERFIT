@@ -5,10 +5,8 @@ import factory.SceneType;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +15,7 @@ import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 import ui.login.CreateUserView;
 import ui.login.LoginView;
+import ui.main.AddExercise;
 import ui.main.ViewExercises;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -265,6 +264,54 @@ public class JavaFxTest {
         //Should be back on MainView
         Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
         assertNotNull(mainLabel, "Should return to MainView after clicking Back button in ViewExercises");
+        assertTrue(mainLabel.isVisible());
+    }
+
+    @Test
+    void addExerciseOpens(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Add Exercise
+        robot.clickOn("Add Exercise");
+        robot.sleep(1000);
+        //Check for Title after Scene change
+        Label title = robot.lookup("Add Exercise").queryAs(Label.class);
+        assertNotNull(title, "Add Exercise title label should exist");
+        assertTrue(title.isVisible(), "Add Exercise title should be visible");
+    }
+
+    @Test
+    void addExerciseFieldsShows(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Add Exercise
+        robot.clickOn("Add Exercise");
+        robot.sleep(1000);
+        //Check that name, category, and description fields show on screen
+        TextField nameField = robot.lookup("#" + AddExercise.nameField).queryAs(TextField.class);
+        assertNotNull(nameField, "Exercise name field should exist");
+        assertTrue(nameField.isVisible());
+        TextField categoryField = robot.lookup("#" + AddExercise.categoryField).queryAs(TextField.class);
+        assertNotNull(categoryField, "Exercise category field should exist");
+        assertTrue(categoryField.isVisible());
+        TextArea descriptionArea = robot.lookup("#" + AddExercise.descriptionArea).queryAs(TextArea.class);
+        assertNotNull(descriptionArea, "Exercise description area should exist");
+        assertTrue(descriptionArea.isVisible());
+    }
+
+    @Test
+    void addExerciseCancelButton(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Add Exercise
+        robot.clickOn("Add Exercise");
+        robot.sleep(1000);
+        //Click on cancel button
+        robot.clickOn("Cancel");
+        robot.sleep(1000);
+        //Should be back on MainView
+        Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
+        assertNotNull(mainLabel, "Should return to MainView after clicking Cancel button in AddExercise");
         assertTrue(mainLabel.isVisible());
     }
 }

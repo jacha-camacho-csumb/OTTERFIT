@@ -586,6 +586,56 @@ public class Database implements AutoCloseable {
   /***********************************************************
    *        NEW METHODS FOR LOG/DELETE WORKOUT                *
    ***********************************************************/
+  /**
+   * Returns all exercises belonging to a user
+   *
+   * @param userId the user's ID
+   * @return list of Exercise objects
+   * @throws SQLException if database error occurs
+   */
+  public List<Exercise> getExercisesByUser(int userId) throws SQLException {
+    List<Exercise> exercises = new ArrayList<>();
+    String sql = "SELECT exercise_id, name, category, description FROM exercises WHERE user_id = ?";
+    try (PreparedStatement ps =
+                 connection.prepareStatement(sql)) {
+      ps.setInt(1, userId);
+      try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+          Exercise ex = new Exercise(
+                  rs.getInt("exercise_id"),
+                  rs.getString("name"),
+                  rs.getString("category"),
+                  rs.getString("description")
+          );
+          exercises.add(ex);
+        }
+      }
+    }
+    return exercises;
+  }
+
+  /***********************************************************
+   *              LOG/DELETE INNER HELPER CLASSES            *
+   ***********************************************************/
+  /**
+   * Simple Exercise data holder
+   */
+  public static class Exercise {
+    private int id;
+    private String name, category, description;
+
+    public Exercise(int id, String name, String category, String description) {
+      this.id = id;
+      this.name = name;
+      this.category = category;
+      this.description = description;
+    }
+    public int getID() { return id; }
+    public String getName() { return name; }
+    public String getCategory() { return category; }
+    public String getDescription() { return description; }
+
+  }
 
   /***********************************************************
    *                   utilities                             *

@@ -614,6 +614,53 @@ public class Database implements AutoCloseable {
     return exercises;
   }
 
+  /**
+   *
+   */
+  public List<WorkoutLog> getWorkoutsByUser(int userId) throws SQLException {
+    List<WorkoutLog> logs = new ArrayList<>();
+    String sql = """
+        SELECT w.workout_id, w.workout_date, w.notes, w.duration_minutes,
+               e.exercise_id, e.name AS exercise_name
+        FROM workouts w
+        JOIN exercises e ON w.exercise_id = e.exercise_id
+        WHERE w.user_id = ?
+        ORDER BY w.workout_date DESC
+        """;
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+      ps.setInt(1, userId);
+      try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+          WorkoutLog log = new WorkoutLog();
+          log.setWorkoutId(rs.getInt("workout_id"));
+          log.setWorkoutDate(rs.getString("workout_date"));
+          log.setNotes(rs.getString("notes"));
+          log.setDurationMinutes(rs.getDouble("duration_minutes"));
+          log.setExerciseId(rs.getInt("exercise_id"));
+          log.setExerciseName(rs.getString("exercise_name"));
+          logs.add(log);
+        }
+      }
+    }
+    return logs;
+  }
+
+  /**
+   * Deletes a workout by its ID.
+   *
+   * @param workoutId the workout ID to delete
+   * @return true if a row was deleted, false otherwise
+   * @throws SQLException if database error occurs
+   */
+  public boolean deleteWorkout(int workoutId) throws SQLException {
+    String sql = "DELETE FROM workouts WHERE workout_id = ?";
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+      ps.setInt(1, workoutId);
+      return ps.executeUpdate() > 0;
+    }
+  }
+
+
   /***********************************************************
    *              LOG/DELETE INNER HELPER CLASSES            *
    ***********************************************************/
@@ -630,12 +677,40 @@ public class Database implements AutoCloseable {
       this.category = category;
       this.description = description;
     }
-    public int getID() { return id; }
+    public int getId() { return id; }
     public String getName() { return name; }
     public String getCategory() { return category; }
     public String getDescription() { return description; }
 
   }
+
+  /**
+   * Simple WorkoutLog data holder (workout + associated exercise name).
+   */
+  public static class WorkoutLog {
+    private int workoutId, exerciseId;
+    private String workoutDate, notes, exerciseName;
+    private double durationMinutes;
+
+    public int getWorkoutId() { return workoutId; }
+    public void setWorkoutId(int id) { this.workoutId = id; }
+
+    public int getExerciseId() { return exerciseId; }
+    public void setExerciseId(int id) { this.exerciseId = id; }
+
+    public String getWorkoutDate() { return workoutDate; }
+    public void setWorkoutDate(String date) { this.workoutDate = date; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+
+    public String getExerciseName() { return exerciseName; }
+    public void setExerciseName(String name) { this.exerciseName = name; }
+
+    public double getDurationMinutes() { return durationMinutes; }
+    public void setDurationMinutes(double d) { this.durationMinutes = d; }
+  }
+
 
   /***********************************************************
    *                   utilities                             *

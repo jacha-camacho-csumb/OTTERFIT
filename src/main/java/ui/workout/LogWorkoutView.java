@@ -3,6 +3,7 @@ package ui.workout;
 import db.Database;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.layout.VBox;
@@ -13,6 +14,9 @@ import ui.workout.components.ExerciseSelector;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextArea;
+import ui.workout.notifications.NotificationManager;
+
+import java.sql.SQLException;
 
 /**
  * Log Workout scene.
@@ -62,5 +66,16 @@ public class LogWorkoutView {
             }
         });
         notesArea.textProperty().bindBidirectional(notes);
+
+        // Load exercises from DB
+        try {
+            var exercises = db.getExercisesByUser(userId);
+
+            exerciseSelector.setExercises(FXCollections.ObservableArrayList(exercises));
+        } catch (SQLException e) {
+            NotificationManager.getInstance().showErrorAlert("Database" , "Could not load exercises.");
+        }
+
+
     }
 }

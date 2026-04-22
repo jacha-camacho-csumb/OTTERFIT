@@ -1,6 +1,8 @@
 package ui.workout;
 
 import db.Database;
+import factory.SceneFactory;
+import factory.SceneType;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -73,7 +75,7 @@ public class LogWorkoutView {
 
             exerciseSelector.setExercises(FXCollections.ObservableArrayList(exercises));
         } catch (SQLException e) {
-            NotificationManager.getInstance().showErrorAlert("Database" , "Could not load exercises.");
+            NotificationManager.getInstance().showErrorAlert("Database", "Could not load exercises.");
         }
 
         // save workout action
@@ -117,5 +119,21 @@ public class LogWorkoutView {
             }
         });
 
+        // clear the form for the next entry
+        exerciseSelector.clearSelection();
+        datePicker.setValue(null);
+        durationField.clear();
+        notesArea.clear();
+
+    } catch (SQLException ex) {
+        NotificationManager.getInstance().showErrorAlert("Save Failed" , ex.getMessage());
     }
+
+    Button cancelBtn = new Button("Cancel");
+    cancelBtn.setStyle("-fx-backgroun-color: #d3d3d3; -fx-font-size:14px; =fx-padding: 10; -fx-background-radius: 8;");
+    cancelBtn.setOnAction(e ->
+            stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db, username)));
+
+    root.getChildren().addAll(title, exerciseSelector, datePicker, durationField, notesArea, saveBtn, cancelBtn);
+    return new Scene(root, 500, 550);
 }

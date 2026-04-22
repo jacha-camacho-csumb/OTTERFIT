@@ -7,6 +7,7 @@ import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
+import ui.workout.components.ExerciseSelector;
 
 /**
  * Log Workout scene.
@@ -28,5 +29,7 @@ public class LogWorkoutView {
         Label title = new Label("Log Workout");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
+        // Custom component used
+        ExerciseSelector exerciseSelector = new ExerciseSelector();
     }
 }

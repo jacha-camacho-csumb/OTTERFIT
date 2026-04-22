@@ -1,6 +1,8 @@
 package ui.workout;
 
 import db.Database;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.layout.VBox;
@@ -43,5 +45,22 @@ public class LogWorkoutView {
         TextArea notesArea = new TextArea();
         notesArea.setPromptText("Notes (optional)");
         notesArea.setPrefHeight(80);
+
+        // Bindings
+        SimpleStringProperty workoutDate = new SimpleStringProperty();
+        SimpleDoubleProperty duration = new SimpleDoubleProperty();
+        SimpleStringProperty notes = new SimpleStringProperty();
+
+        datePicker.valueProperty().addListener((obs, old, newVal) ->
+                workoutDate.set(newVal == null ? "" : newVal.toString()));
+
+        durationField.textProperty().addListener((obs, old, newVal) -> {
+            try {
+                duration.set(Double.parseDouble(newVal));
+            } catch (NumberFormatException e) {
+                duration.set(0.0);
+            }
+        });
+        notesArea.textProperty().bindBidirectional(notes);
     }
 }

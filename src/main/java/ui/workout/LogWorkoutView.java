@@ -7,15 +7,12 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
-import javafx.scene.control.Label;
 import ui.workout.components.ExerciseSelector;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextArea;
 import ui.workout.notifications.NotificationManager;
 
 import java.sql.SQLException;
@@ -73,12 +70,14 @@ public class LogWorkoutView {
         try {
             var exercises = db.getExercisesByUser(userId);
 
-            exerciseSelector.setExercises(FXCollections.ObservableArrayList(exercises));
+            exerciseSelector.setExercises(FXCollections.observableArrayList(exercises));
         } catch (SQLException e) {
             NotificationManager.getInstance().showErrorAlert("Database", "Could not load exercises.");
         }
 
         // save workout action
+        Button saveBtn = new Button("Save");
+        saveBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10; -fx-background-radius: 8;");
         saveBtn.setOnAction(e -> {
             Exercise selected = exerciseSelector.getSelectedExercise();
             if (selected == null) {
@@ -109,7 +108,7 @@ public class LogWorkoutView {
                         String.format("%s - %s, %.0f min",
                                 datePicker.getValue(), selected.getName(), dur)
                 );
-                // clear form
+                // clear form for the next entry
                 exerciseSelector.clearSelection();
                 datePicker.setValue(null);
                 durationField.clear();
@@ -119,21 +118,13 @@ public class LogWorkoutView {
             }
         });
 
-        // clear the form for the next entry
-        exerciseSelector.clearSelection();
-        datePicker.setValue(null);
-        durationField.clear();
-        notesArea.clear();
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setStyle("-fx-background-color: #d3d3d3; -fx-font-size: 14px; -fx-padding: 10; -fx-background-radius: 8;");
+        cancelBtn.setOnAction(e ->
+                stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db, username))
+        );
 
-    } catch (SQLException ex) {
-        NotificationManager.getInstance().showErrorAlert("Save Failed" , ex.getMessage());
+        root.getChildren().addAll(title, exerciseSelector, datePicker, durationField, notesArea, saveBtn, cancelBtn);
+        return new Scene(root, 500, 550);
     }
-
-    Button cancelBtn = new Button("Cancel");
-    cancelBtn.setStyle("-fx-backgroun-color: #d3d3d3; -fx-font-size:14px; =fx-padding: 10; -fx-background-radius: 8;");
-    cancelBtn.setOnAction(e ->
-            stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db, username)));
-
-    root.getChildren().addAll(title, exerciseSelector, datePicker, durationField, notesArea, saveBtn, cancelBtn);
-    return new Scene(root, 500, 550);
 }

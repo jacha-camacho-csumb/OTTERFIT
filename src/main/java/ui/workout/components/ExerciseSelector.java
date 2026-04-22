@@ -1,3 +1,5 @@
+package ui.workout.components;
+
 /**
  * Provides a reusable dropdown component for selecting an exercise.
  * Uses data binding with ObservableList
@@ -6,8 +8,6 @@
  * @version 0.1.0
  * @since 4/21/2026
  */
-
-package ui.workout.components;
 
 import db.Database.Exercise;
 import javafx.collections.FXCollections;

@@ -17,6 +17,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import ui.workout.LogWorkoutView;
 import ui.workout.notifications.NotificationManager;
+import ui.workout.DeleteWorkoutView;
 
 /**
  * MainView Description: Main application view, dashboard/homescreen?
@@ -99,6 +100,21 @@ public class MainView {
       stage.setScene(SceneFactory.create(SceneType.VIEW_HISTORY, stage, db, username));
     });
 
+    // Delete Workout button
+    Button deleteWorkoutBtn = new Button("Delete Workout");
+    deleteWorkoutBtn.setPrefSize(buttonWidth, buttonHeight);
+    deleteWorkoutBtn.setStyle(buttonStyle);
+    deleteWorkoutBtn.setOnAction(e -> {
+      try {
+        int userId = db.readUser(username).userId;
+        Scene scene = DeleteWorkoutView.createScene(stage, db, userId, username);
+        stage.setScene(scene);
+      } catch (Exception ex) {
+        ex.printStackTrace();
+        NotificationManager.getInstance().showErrorAlert("Error", "Could not open Delete Workout.");
+      }
+    });
+
     Button signOutBtn = new Button("Sign Out");
     signOutBtn.setPrefSize(buttonWidth, buttonHeight);
     signOutBtn.setStyle(signOutStyle);
@@ -130,6 +146,7 @@ public class MainView {
         viewExercisesBtn,
         addExerciseBtn,
         viewHistoryBtn,
+        deleteWorkoutBtn,
         signOutBtn
     );
 

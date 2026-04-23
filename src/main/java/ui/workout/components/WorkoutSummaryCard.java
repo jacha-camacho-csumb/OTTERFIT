@@ -35,4 +35,21 @@ public class WorkoutSummaryCard {
         notesLabel = new Label("Notes: -");
         notesLabel.setWrapText(true);
 
+        this.getChildren().addAll(header, exerciseLabel, dateLabel, durationLabel, notesLabel);
+
+        // Bind the labels to the workout property
+        workout.addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                exerciseLabel.setText("Exercise: " + newVal.getExerciseName());
+                dateLabel.setText("Date: " + newVal.getWorkoutDate());
+                durationLabel.setText("Duration: " + newVal.getDurationMinutes() + " min");
+                notesLabel.setText("Notes: " + (newVal.getNotes() == null ? "â€”" : newVal.getNotes()));
+            } else {
+                exerciseLabel.setText("Exercise: -");
+                dateLabel.setText("Date: -");
+                durationLabel.setText("Duration: -");
+                notesLabel.setText("Notes: -");
+            }
+        });
+
     }

@@ -4,7 +4,7 @@ import db.Database.WorkoutLog;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Label;
-
+import javafx.scene.layout.VBox;
 
 /**
  * Reusable component that displays a workout summary.
@@ -15,7 +15,7 @@ import javafx.scene.control.Label;
  * @since 4/22/2026
  */
 
-public class WorkoutSummaryCard {
+public class WorkoutSummaryCard extends VBox{
     private final Label exerciseLabel;
     private final Label dateLabel;
     private final Label durationLabel;
@@ -64,4 +64,4 @@ public class WorkoutSummaryCard {
     public ObjectProperty<WorkoutLog> workoutProperty() {
         return workout;
     }
-
+}

@@ -1,6 +1,7 @@
 package ui.workout;
 
 import db.Database;
+import db.Database.Exercise;
 import factory.SceneFactory;
 import factory.SceneType;
 import javafx.beans.property.SimpleDoubleProperty;

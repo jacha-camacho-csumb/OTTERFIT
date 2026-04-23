@@ -15,6 +15,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import ui.workout.LogWorkoutView;
+import ui.workout.notifications.NotificationManager;
 
 /**
  * MainView Description: Main application view, dashboard/homescreen?
@@ -57,11 +59,21 @@ public class MainView {
     int buttonHeight = 50;
 
     // Buttons
+    // Log workout button with scene navigation
     Button logWorkoutBtn = new Button("Log Workout");
     logWorkoutBtn.setPrefSize(buttonWidth, buttonHeight);
     logWorkoutBtn.setStyle(buttonStyle);
-    logWorkoutBtn.setOnAction(e ->
-        System.out.println(username + " clicked Log Workout"));
+    logWorkoutBtn.setOnAction(e -> {
+      try {
+        int userId = db.readUser(username).userId;
+        Scene scene = LogWorkoutView.createScene(stage, db, userId, username);
+        stage.setScene(scene);
+      } catch (Exception ex) {
+        ex.printStackTrace();
+        NotificationManager.getInstance().showErrorAlert("Error", "Could not open Log Workout.");
+      }
+    });
+// ending code for log workout nav
 
     Button viewExercisesBtn = new Button("View Exercises");
     viewExercisesBtn.setPrefSize(buttonWidth, buttonHeight);

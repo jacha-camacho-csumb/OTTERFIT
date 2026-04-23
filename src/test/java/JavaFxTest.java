@@ -406,4 +406,17 @@ public class JavaFxTest {
         assertNotNull(title, "Delete Workout title label should exist after clicking Delete Workout");
         assertTrue(title.isVisible(), "Delete Workout title should be visible");
     }
+
+    @Test
+    void deleteWorkoutComboBoxLoads(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Delete Workout
+        robot.clickOn("Delete Workout");
+        robot.sleep(400);
+        //Combo Box should be loaded with Test Workouts
+        ComboBox<?> workoutCombo = robot.lookup(".combo-box").queryAs(ComboBox.class);
+        assertNotNull(workoutCombo, "Workout ComboBox should exist on Delete Workout");
+        assertFalse(workoutCombo.getItems().isEmpty(), "Workout ComboBox should contain at least one entry");
+    }
 }

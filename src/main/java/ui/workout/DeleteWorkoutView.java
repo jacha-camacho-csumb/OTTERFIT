@@ -1,5 +1,22 @@
 package ui.workout;
 
+import db.Database;
+import db.Database.WorkoutLog;
+import factory.SceneFactory;
+import factory.SceneType;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import ui.workout.notifications.NotificationManager;
+
+import java.sql.SQLException;
+import java.util.List;
+
 
 /**
  * Deletes workout scene redesigned to match the original mockup
@@ -86,4 +103,39 @@ public class DeleteWorkoutView {
             }
         });
 
+        //buttons
+        Button confirmBtn = new Button("Confirm Delete");
+        confirmBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 14px; " +
+                "-fx-padding: 10 20; -fx-background-radius: 8;");
+        confirmBtn.setOnAction(e -> {
+            WorkoutLog selected = workoutCombo.getValue();
+            if (selected == null) {
+                NotificationManager.getInstance().showWarningAlert("No Selection", "Please select a workout to delete.");
+                return;
+            }
+            boolean confirm = NotificationManager.getInstance().showConfirmationDialog("Confirm Delete",
+                    "Delete workout on " + selected.getWorkoutDate() + " (" + selected.getExerciseName() + ")?");
+            if (confirm) {
+                try {
+                    db.deleteWorkout(selected.getWorkoutId());
+                    NotificationManager.getInstance().showDesktopNotification("Workout Deleted",
+                            selected.getWorkoutDate() + " - " + selected.getExerciseName());
+                    // Refresh the list
+                    workouts.setAll(db.getWorkoutsByUser(userId));
+                    workoutCombo.setValue(null);
+                } catch (SQLException ex) {
+                    NotificationManager.getInstance().showErrorAlert("Delete Failed", ex.getMessage());
+                }
+            }
+        });
+
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setStyle("-fx-background-color: #9e9e9e; -fx-text-fill: white; -fx-font-size: 14px; " +
+                "-fx-padding: 10 20; -fx-background-radius: 8;");
+        cancelBtn.setOnAction(e -> stage.setScene(SceneFactory.create(SceneType.MAIN, stage, db, username)));
+
+        // Arrange all elements
+        root.getChildren().addAll(title, workoutCombo, questionLabel, card, confirmBtn, cancelBtn);
+        return new Scene(root, 500, 600);
     }
+}

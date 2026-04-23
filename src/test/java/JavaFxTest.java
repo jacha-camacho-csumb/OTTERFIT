@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version 0.3.0 : JA : Updated after altering MainView
  * @version 0.4.0 : CH : Updated for new MainView, ViewHistory scene, and CreateUserView email/cancel fields
  * @version 0.5.0 : CH : Updated for adding ViewExercises and AddExercise
+ * @version 0.6.0 : CH : Updated for adding LogWorkoutView and DeleteWorkoutView
  */
 @ExtendWith(ApplicationExtension.class)
 public class JavaFxTest {
@@ -418,5 +419,21 @@ public class JavaFxTest {
         ComboBox<?> workoutCombo = robot.lookup(".combo-box").queryAs(ComboBox.class);
         assertNotNull(workoutCombo, "Workout ComboBox should exist on Delete Workout");
         assertFalse(workoutCombo.getItems().isEmpty(), "Workout ComboBox should contain at least one entry");
+    }
+
+    @Test
+    void deleteWorkoutCancelButton(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Delete Workout
+        robot.clickOn("Delete Workout");
+        robot.sleep(400);
+        //Click on the Cancel Button
+        robot.clickOn("Cancel");
+        robot.sleep(400);
+        //Should be back on MainView after clicking cancel
+        Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
+        assertNotNull(mainLabel, "Should return to MainView after clicking Cancel Button");
+        assertTrue(mainLabel.isVisible(), "Welcome label should be visible after cancel");
     }
 }

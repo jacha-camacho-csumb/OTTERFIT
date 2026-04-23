@@ -69,7 +69,7 @@ public class LogWorkoutView {
 
         // Load exercises from DB
         try {
-            var exercises = db.getExercisesByUser(userId);
+            var exercises = db.getAllExercises();
 
             exerciseSelector.setExercises(FXCollections.observableArrayList(exercises));
         } catch (SQLException e) {

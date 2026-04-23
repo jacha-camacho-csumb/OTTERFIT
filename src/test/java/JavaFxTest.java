@@ -361,5 +361,35 @@ public class JavaFxTest {
         //Should be back on MainView after saving new exercise
         Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
         assertNotNull(mainLabel, "Should return to MainView after clicking Save button in AddExercise");
+        assertTrue(mainLabel.isVisible(), "Welcome label should be visible after cancel");
+    }
+
+    @Test
+    void logWorkoutOpens(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Log Workout
+        robot.clickOn("Log Workout");
+        robot.sleep(400);
+        //Log workout title should be visible on the after clicking
+        Label title = robot.lookup("Log Workout").queryAs(Label.class);
+        assertNotNull(title, "Log Workout title label should exist after clicking Log Workout");
+        assertTrue(title.isVisible(), "Log Workout title should be visible");
+    }
+
+    @Test
+    void logWorkoutCancelButton(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Log Workout
+        robot.clickOn("Log Workout");
+        robot.sleep(400);
+        //Click on Cancel Button
+        robot.clickOn("Cancel");
+        robot.sleep(400);
+        //Should be back on MainView after clicking cancel
+        Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
+        assertNotNull(mainLabel, "Should return to MainView after clicking Cancel Button");
+        assertTrue(mainLabel.isVisible(), "Welcome label should be visible after cancel");
     }
 }

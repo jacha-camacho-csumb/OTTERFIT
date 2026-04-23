@@ -115,6 +115,7 @@ public class JavaFxTest {
         assertNotNull(robot.lookup("View Exercises").queryAs(Button.class), "View Exercises button should exist");
         assertNotNull(robot.lookup("Add Exercise").queryAs(Button.class), "Add Exercise button should exist");
         assertNotNull(robot.lookup("View History").queryAs(Button.class), "View History button should exist");
+        assertNotNull(robot.lookup("Delete Workout").queryAs(Button.class), "Delete Workout button should exist");
         assertNotNull(robot.lookup("Sign Out").queryAs(Button.class), "Sign Out button should exist");
     }
 
@@ -391,5 +392,18 @@ public class JavaFxTest {
         Label mainLabel = robot.lookup("Welcome, otter").queryAs(Label.class);
         assertNotNull(mainLabel, "Should return to MainView after clicking Cancel Button");
         assertTrue(mainLabel.isVisible(), "Welcome label should be visible after cancel");
+    }
+
+    @Test
+    void deleteWorkoutOpens(FxRobot robot){
+        //Login
+        loginAsOtter(robot);
+        //Click on Delete Workout
+        robot.clickOn("Delete Workout");
+        robot.sleep(400);
+        //Delete Workout title should be visible
+        Label title = robot.lookup("Delete Workout").queryAs(Label.class);
+        assertNotNull(title, "Delete Workout title label should exist after clicking Delete Workout");
+        assertTrue(title.isVisible(), "Delete Workout title should be visible");
     }
 }

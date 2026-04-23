@@ -51,5 +51,17 @@ public class WorkoutSummaryCard {
                 notesLabel.setText("Notes: -");
             }
         });
-
     }
+
+    public void setWorkout(WorkoutLog workout) {
+        this.workout.set(workout);
+    }
+
+    public WorkoutLog getWorkout() {
+        return workout.get();
+    }
+
+    public ObjectProperty<WorkoutLog> workoutProperty() {
+        return workout;
+    }
+

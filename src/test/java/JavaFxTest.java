@@ -54,6 +54,10 @@ public class JavaFxTest {
         stage.setScene(SceneFactory.create(SceneType.LOGIN, stage, db));
         // Show the window
         stage.show();
+        stage.toFront();
+        stage.requestFocus();
+        stage.setAlwaysOnTop(true);
+        stage.setAlwaysOnTop(false);
     }
 
     @Test
